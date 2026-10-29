@@ -241,8 +241,8 @@ function scoreboard(msg){
 }
 
 function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên của Người 1
-  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên của Người 2
+  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1
+  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2
   
   var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
   var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
@@ -260,15 +260,15 @@ function playEvent(res){
     }
   }
 
-  // TÍNH ĐIỂM CHUẨN THEO SỐ LƯỢNG VIÊN: Ra mấy viên tính bằng đấy điểm (+2 nếu ra 2 viên...)
+  // TÍNH ĐIỂM CHUẨN THEO SỐ LƯỢNG VIÊN THỰC TẾ (Ra mấy viên cộng bấy nhiêu điểm)
   if(a > b){
-    var diff = a - b;
-    ev.s1 += diff;
-    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + diff + ")";
+    var pts = a; // Lấy đúng số viên làm số điểm cộng thêm
+    ev.s1 += pts;
+    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + pts + ")";
   } else if(b > a){
-    var diff = b - a;
-    ev.s2 += diff;
-    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + diff + ")";
+    var pts = b; // Lấy đúng số viên làm số điểm cộng thêm
+    ev.s2 += pts;
+    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + pts + ")";
   } else {
     m = "Hòa (Cả hai có số viên bằng nhau)";
   }
@@ -340,7 +340,7 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // LUÔN ĐỌC "36" MỖI KHI ROLL XONG
+  // MỖI KHI ROLL SẼ ĐỌC "36"
   say("36");
   
   var md=mode,n=(md==="q")?1:nd,t=0;
@@ -361,15 +361,13 @@ function roll(){
           var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
           
           if(forceTieOrOpponent){
-            // Cho đối thủ ra nhiều viên hơn hoặc bằng để giằng co
-            var numOpp = 1 + rndInt(2); // 1 hoặc 2 viên
-            var numTarget = rndInt(2);   // 0 hoặc 1 viên
+            var numOpp = 1 + rndInt(2); 
+            var numTarget = rndInt(2);   
             for(var k=0; k<numOpp; k++) res.push(oppColor);
             for(var k=0; k<numTarget; k++) res.push(targetColor);
           } else {
-            // Cho người được chọn ra 1 hoặc 2 viên để ăn điểm +1 hoặc +2 tùy số lượng thực tế
             var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0); // 1 hoặc 2 viên
-            var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
+            var numOpp = rndInt(2); 
             
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
