@@ -179,18 +179,19 @@ function playEvent(res){
   var a=res.filter(function(c){return c===ev.c1;}).length;
   var b=res.filter(function(c){return c===ev.c2;}).length;
   
-  if(a === b){
-    if(ev.rig === 2) { b++; }
-    else { a++; }
-  }
-
   var m="";
-  if(a > b){
+  // ÉP TUYỆT ĐỐI THEO ĐIỀU KHIỂN: rig === 1 -> Người 1 luôn ăn điểm, rig === 2 -> Người 2 luôn ăn điểm
+  if(ev.rig === 1){
     ev.s1 += 1;
-    m = ev.n1 + " nhiều hơn → " + ev.n1 + " +1 điểm";
-  } else {
+    m = ev.n1 + " chiến thắng lượt này (+1 điểm)";
+  } else if(ev.rig === 2){
     ev.s2 += 1;
-    m = ev.n2 + " nhiều hơn → " + ev.n2 + " +1 điểm";
+    m = ev.n2 + " chiến thắng lượt này (+1 điểm)";
+  } else {
+    // Chế độ bình thường
+    if(a === b) a++;
+    if(a > b){ ev.s1 += 1; m = ev.n1 + " +1 điểm"; }
+    else { ev.s2 += 1; m = ev.n2 + " +1 điểm"; }
   }
   
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
@@ -264,13 +265,13 @@ function roll(){
         clearInterval(h);
         var res=[];
         if(md==="e" && ev.rig && ev.rig > 0){
-          // rig === 1 -> Người 1 (c1) luôn thắng, rig === 2 -> Người 2 (c2) luôn thắng
+          // rig === 1 -> Ép Người 1 (c1), rig === 2 -> Ép Người 2 (c2)
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // Đảm bảo bên được chọn luôn ra nhiều viên hơn để ăn điểm chắc chắn
-          var numTarget = 2 + (rndInt(100) < 50 ? 1 : 0); // 2 hoặc 3 viên
-          var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
+          // Luôn cho ra 2 hoặc 3 viên màu của người được ép để hiển thị tự nhiên nhưng áp đảo
+          var numTarget = 2 + (rndInt(100) < 50 ? 1 : 0); 
+          var numOpp = rndInt(2); 
           
           for(var k=0; k<numTarget; k++) res.push(targetColor);
           for(var k=0; k<numOpp; k++) res.push(oppColor);
