@@ -55,8 +55,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="dice"></div>
 <div id="ban"></div>
 <button id="roll">ROLL AGAIN !</button>
-<button class="s" id="tv" style="display:none">🔊 Thử giọng nói</button>
-<div id="vs" style="display:none"></div>
+<button class="s" id="tv">🔊 Thử giọng nói</button>
+<div id="vs"></div>
 
 <div class="n pc">Possible colors are:
 <b style="color:#f00">Red</b>, <b style="color:#ffa500">Orange</b>,
@@ -136,7 +136,72 @@ tap($("zm"),function(){if(zi>0){zi--;applyView();}});
 tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
 tap($("mn"),function(){mini=!mini;applyView();});
 
+function vstat(t){$("vs").textContent=t;}
 function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
+
+var voices=[];
+var ae=new Audio();ae.preload="auto";
+var SIL="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+var unl=false;
+function unlock(){
+  if(unl)return;unl=true;
+  try{ae.src=SIL;var p=ae.play();if(p&&p.catch)p.catch(function(){});}catch(e){}
+}
+document.addEventListener("pointerdown",unlock);
+document.addEventListener("click",unlock);
+document.addEventListener("touchstart",unlock,{passive:true});
+
+function loadV(){try{voices=window.speechSynthesis.getVoices()||[];}catch(e){}}
+try{if(window.speechSynthesis){loadV();window.speechSynthesis.onvoiceschanged=loadV;}}catch(e){}
+
+var sq=[],sBusy=false,talking=false,sid=0;
+function say(text){sq.push(text);sProcess();}
+function stopSpeech(){
+  sq.length=0;sid++;sBusy=false;talking=false;
+  try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}
+  try{ae.pause();}catch(e){}
+}
+function sProcess(){
+  if(sBusy||!sq.length)return;
+  sBusy=true;
+  var text=sq.shift(),id=++sid,finished=false,started=false,viaG=false;
+  banner(text);
+  function done(){
+    if(finished||id!==sid)return;
+    finished=true;talking=false;sBusy=false;
+    setTimeout(sProcess,150);
+  }
+  function mark(){if(id===sid){started=true;talking=true;}}
+  function google(){
+    if(viaG||finished||id!==sid)return;
+    viaG=true;
+    try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}
+    ae.onplaying=function(){mark();vstat("Giọng đọc: Google ✓");};
+    ae.onended=done;
+    ae.onerror=function(){vstat("Máy không phát được giọng đọc");done();};
+    try{
+      ae.src="https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(text);
+      var p=ae.play();
+      if(p&&p.catch)p.catch(function(){vstat("Máy không phát được giọng đọc");done();});
+    }catch(e){done();}
+  }
+  setTimeout(done,8000);
+  try{
+    var s=window.speechSynthesis;
+    if(!s||typeof SpeechSynthesisUtterance==="undefined"){google();return;}
+    if(s.paused)s.resume();
+    if(!voices.length)loadV();
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang="vi-VN";u.rate=1;u.pitch=1;u.volume=1;
+    var v=voices.filter(function(x){return x.lang&&x.lang.toLowerCase().indexOf("vi")===0;});
+    if(v.length)u.voice=v[0];
+    u.onstart=function(){mark();vstat("Giọng đọc: trình duyệt ✓");};
+    u.onend=function(){if(!viaG)done();};
+    u.onerror=function(){if(viaG)return;if(!started)google();else done();};
+    s.speak(u);
+    setTimeout(function(){if(!started&&!finished)google();},1200);
+  }catch(e){google();}
+}
 
 function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
 function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
@@ -176,31 +241,36 @@ function scoreboard(msg){
 }
 
 function playEvent(res){
-  var a=res.filter(function(c){return c===ev.c1;}).length;
-  var b=res.filter(function(c){return c===ev.c2;}).length;
+  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên của Người 1
+  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên của Người 2
   
   var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
   var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
   
-  var m="";
-  // Giằng co sát nút ở đầu trận (dưới 3 điểm)
-  var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 60);
+  var m = "";
+  
+  // Thuật toán giằng co đầu trận (dưới 3 điểm)
+  var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
   
   if(forceTieOrOpponent){
-    if(ev.rig === 1) { ev.s2 += 1; m = ev.n2 + " bứt lên (+1 điểm)"; }
-    else { ev.s1 += 1; m = ev.n1 + " bứt lên (+1 điểm)"; }
-  } else {
-    if(ev.rig === 1){
-      ev.s1 += 1;
-      m = ev.n1 + " chiến thắng lượt này (+1 điểm)";
-    } else if(ev.rig === 2){
-      ev.s2 += 1;
-      m = ev.n2 + " chiến thắng lượt này (+1 điểm)";
-    } else {
-      if(a === b) a++;
-      if(a > b){ ev.s1 += 1; m = ev.n1 + " +1 điểm"; }
-      else { ev.s2 += 1; m = ev.n2 + " +1 điểm"; }
+    if(ev.rig === 1) { 
+      b = (b < a + 1) ? a + 1 : b; 
+    } else { 
+      a = (a < b + 1) ? b + 1 : a; 
     }
+  }
+
+  // TÍNH ĐIỂM CHUẨN THEO SỐ LƯỢNG VIÊN: Ra mấy viên tính bằng đấy điểm (+2 nếu ra 2 viên...)
+  if(a > b){
+    var diff = a - b;
+    ev.s1 += diff;
+    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + diff + ")";
+  } else if(b > a){
+    var diff = b - a;
+    ev.s2 += diff;
+    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + diff + ")";
+  } else {
+    m = "Hòa (Cả hai có số viên bằng nhau)";
   }
   
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
@@ -215,8 +285,13 @@ function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
-  if(w.length){ w.forEach(function(p){p.w++;}); }
-  else { q.house++; }
+  if(w.length){ 
+    w.forEach(function(p){p.w++;}); 
+    say(w.map(function(p){return p.n;}).join(" và "));
+  } else { 
+    q.house++; 
+    say("nhà cái thắng");
+  }
 }
 
 cfgRef.on("value", function(snap){
@@ -263,7 +338,10 @@ function roll(){
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
-  setTimeout(function(){busy=false;},500);
+  setTimeout(function(){busy=false;},1000);
+  
+  // LUÔN ĐỌC "36" MỖI KHI ROLL XONG
+  say("36");
   
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
@@ -277,12 +355,25 @@ function roll(){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // CHỈ CHO RA TỐI ĐA 1 HOẶC 2 VIÊN MÀU MỤC TIÊU ĐỂ CỰC KỲ TỰ NHIÊN, KHÔNG BỊ LỘ
-          var numTarget = 1 + (rndInt(100) < 40 ? 1 : 0); // 1 hoặc 2 viên
-          var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
+          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
+          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          for(var k=0; k<numTarget; k++) res.push(targetColor);
-          for(var k=0; k<numOpp; k++) res.push(oppColor);
+          var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
+          
+          if(forceTieOrOpponent){
+            // Cho đối thủ ra nhiều viên hơn hoặc bằng để giằng co
+            var numOpp = 1 + rndInt(2); // 1 hoặc 2 viên
+            var numTarget = rndInt(2);   // 0 hoặc 1 viên
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+            for(var k=0; k<numTarget; k++) res.push(targetColor);
+          } else {
+            // Cho người được chọn ra 1 hoặc 2 viên để ăn điểm +1 hoặc +2 tùy số lượng thực tế
+            var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0); // 1 hoặc 2 viên
+            var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
+            
+            for(var k=0; k<numTarget; k++) res.push(targetColor);
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+          }
           
           while(res.length < n){
             var c = rndInt(6);
@@ -310,6 +401,7 @@ function roll(){
   },25);
 }
 tap($("roll"),roll);
+tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
 tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
