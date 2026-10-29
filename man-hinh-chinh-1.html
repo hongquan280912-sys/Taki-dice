@@ -48,7 +48,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
+<div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien-1.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -101,7 +101,6 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var q={on:false,rounds:0,house:0,p:[]};
-var lastCfgId=0;
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -188,5 +187,122 @@ function playEvent(res){
   var m="";
   if(a > b){
     ev.s1 += 1;
-    m = ev.n1 + " nhiều hơn → " + ev.n1 +
- 
+    m = ev.n1 + " nhiều hơn → " + ev.n1 + " +1 điểm";
+  } else {
+    ev.s2 += 1;
+    m = ev.n2 + " nhiều hơn → " + ev.n2 + " +1 điểm";
+  }
+  
+  var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
+  if(win){
+    ev.over = true;
+    m += " | " + win + " THẮNG CHUNG CUỘC!";
+  }
+  scoreboard(m);
+}
+
+function playQ(res){
+  q.rounds++;
+  var col=res[0];
+  var w=q.p.filter(function(p){return p.c===col;});
+  if(w.length){ w.forEach(function(p){p.w++;}); }
+  else { q.house++; }
+}
+
+// Bắt sự kiện nhận cấu hình lập tức không bị kẹt
+cfgRef.on("value", function(snap){
+  var cfg = snap.val();
+  if(!cfg) return;
+  $("waiting").style.display="none";
+  mode = cfg.mode || "n";
+  nd = cfg.nd || 4;
+  $("score").style.display = "none";
+  ev.on = false; q.on = false;
+
+  if(mode === "e" && cfg.ev){
+    ev = {
+      on: true, over: false, s1: 0, s2: 0,
+      t: cfg.ev.t || 5, c1: cfg.ev.c1, c2: cfg.ev.c2,
+      n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
+      rig: cfg.ev.rig || 0
+    };
+    scoreboard("Bắt đầu! Bấm ROLL để chơi");
+  } else if(mode === "q" && cfg.q && cfg.q.players){
+    var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
+    q = {on: true, rounds: 0, house: 0, p: p};
+  }
+  show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
+  banner("Đã nhận cấu hình mới!");
+});
+
+function roll(){
+  if(busy)return;
+  if(mode==="e"){
+    if(!ev.on){banner("Chưa có cấu hình!");return;}
+    if(ev.over){banner("Đã có người thắng!");return;}
+  }
+  if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
+  
+  busy=true;
+  setTimeout(function(){busy=false;},1500);
+  
+  var md=mode,n=(md==="q")?1:nd,t=0;
+  var h=setInterval(function(){
+    try{
+      t++;
+      if(t<6){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
+      else{
+        clearInterval(h);
+        var res=[];
+        if(md==="e" && ev.rig && ev.rig > 0){
+          var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
+          var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
+          
+          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
+          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
+          
+          var forceOpponentLead = (myScore === 0 && oppScore < 3 && rndInt(100) < 50);
+          
+          if(forceOpponentLead) {
+            var numOpp = 2; 
+            var numTarget = 1;  
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+            for(var k=0; k<numTarget; k++) res.push(targetColor);
+          } else {
+            var numTarget = 1; 
+            if(rndInt(100) < 30) numTarget = 2;
+            var numOpp = 1; 
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+          }
+          
+          while(res.length < n){
+            var c = rndInt(6);
+            if(c !== targetColor && c !== oppColor) {
+              res.push(c);
+            } else if(rndInt(100) < 20) {
+              res.push(c);
+            }
+          }
+          res.sort(function(){ return Math.random() - 0.5; });
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        
+        show(res);
+        res.forEach(function(c){cnt[c]++;});
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(rolls.length>20)rolls.pop();
+        stats();
+        busy=false;
+        if(md==="e")playEvent(res);
+        if(md==="q")playQ(res);
+      }
+    }catch(err){clearInterval(h);busy=false;}
+  },50);
+}
+tap($("roll"),roll);
+tap($("tv"),function(){});
+tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
+show([0,1,2,3]);stats();applyView();
+</script>
+</body></html>
