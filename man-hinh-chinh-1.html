@@ -188,30 +188,5 @@ function playEvent(res){
   var m="";
   if(a > b){
     ev.s1 += 1;
-    m = ev.n1 + " nhiều hơn → " + ev.n1 + " +1 điểm";
-  } else {
-    ev.s2 += 1;
-    m = ev.n2 + " nhiều hơn → " + ev.n2 + " +1 điểm";
-  }
-  
-  var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
-  if(win){
-    ev.over = true;
-    m += " | " + win + " THẮNG CHUNG CUỘC!";
-  }
-  scoreboard(m);
-}
-
-function playQ(res){
-  q.rounds++;
-  var col=res[0];
-  var w=q.p.filter(function(p){return p.c===col;});
-  if(w.length){ w.forEach(function(p){p.w++;}); }
-  else { q.house++; }
-}
-
-function applyConfig(cfg){
-  $("waiting").style.display="none";
-  mode=cfg.mode||"n";
-  nd=cfg.
+    m = ev.n1 + " nhiều hơn → " + ev.n1 +
  
