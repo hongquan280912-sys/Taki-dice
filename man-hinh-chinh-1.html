@@ -97,7 +97,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room1"; // phải trùng với dieu-khien.html
+var ROOM = "taki_room1";
 var cfgRef = db.ref(ROOM + "/config");
 
 var connEl=document.getElementById("conn");
@@ -110,13 +110,12 @@ var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
-var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
+var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var q={on:false,rounds:0,house:0,p:[]};
 var lastCfgId=0;
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
-/* ---------- BẤM NÚT (chống lỗi, chống bấm đúp) ---------- */
 function tap(el,fn){
   var last=0;
   function h(e){
@@ -129,7 +128,6 @@ function tap(el,fn){
   el.addEventListener("click",h);
 }
 
-/* ---------- THU NHỎ / PHÓNG TO ---------- */
 var ZS=[.6,.7,.8,.9,1,1.1,1.2,1.35,1.5],zi=4,mini=false;
 try{
   var sv=JSON.parse(localStorage.getItem("zv")||"null");
@@ -150,7 +148,6 @@ tap($("zm"),function(){if(zi>0){zi--;applyView();}});
 tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
 tap($("mn"),function(){mini=!mini;applyView();});
 
-/* ---------- GIỌNG NÓI: xếp hàng, đọc lần lượt, không chen nhau ---------- */
 var voices=[];
 var ae=new Audio();ae.preload="auto";
 var SIL="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
@@ -218,7 +215,6 @@ function sProcess(){
   }catch(e){google();}
 }
 
-/* ---------- RANDOM THUẦN ---------- */
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
   var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
@@ -230,7 +226,16 @@ function rndInt(n){
 }
 function take(){return rndInt(6);}
 
-/* ---------- HIỂN THỊ ---------- */
+function takeRigged(){
+  if(mode==="e" && ev.rig && ev.rig > 0){
+    var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
+    if(rndInt(100) < 70){
+      return targetColor;
+    }
+  }
+  return rndInt(6);
+}
+
 function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
 function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
 function stats(){
@@ -264,7 +269,6 @@ tap($("t1k"),function(){
     "<div style=\"margin-top:6px\">Lý tưởng mỗi màu ≈ 667. Chênh cao nhất và thấp nhất: "+(mx-mn)+" viên ("+(((mx-mn)/4000)*100).toFixed(1)+"%).</div>";
 });
 
-/* ---------- EVENT 2 NGƯỜI ---------- */
 function scoreboard(msg){
   $("score").style.display="block";
   $("sc").innerHTML='<span style="color:'+C[ev.c1]+'">'+esc(ev.n1)+'</span> '+ev.s1+' - '+ev.s2+
@@ -285,7 +289,6 @@ function playEvent(res){
   if(!who)say("Hòa");
 }
 
-/* ---------- EVENT NHIỀU NGƯỜI (1 XÚC XẮC) ---------- */
 function scoreQ(msg){
   $("score4").style.display="block";
   var h="";
@@ -314,7 +317,6 @@ function playQ(res){
   if(!w.length)say(s);
 }
 
-/* ---------- ÁP DỤNG CẤU HÌNH NHẬN TỪ ĐIỆN THOẠI ĐIỀU KHIỂN ---------- */
 function applyConfig(cfg){
   stopSpeech();
   $("waiting").style.display="none";
@@ -326,7 +328,8 @@ function applyConfig(cfg){
 
   if(mode==="e"&&cfg.ev){
     ev={on:true,over:false,s1:0,s2:0,t:cfg.ev.t||5,c1:cfg.ev.c1,c2:cfg.ev.c2,
-        n1:cfg.ev.n1||"Người 1",n2:cfg.ev.n2||"Người 2"};
+        n1:cfg.ev.n1||"Người 1",n2:cfg.ev.n2||"Người 2",
+        rig: cfg.ev.rig || 0};
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
   } else if(mode==="q"&&cfg.q&&cfg.q.players){
     var p=cfg.q.players.map(function(x){return {n:x.n,c:x.c,w:0};});
@@ -346,7 +349,6 @@ cfgRef.on("value",function(snap){
   }
 });
 
-/* ---------- ROLL ---------- */
 function roll(){
   if(busy)return;
   if(talking){banner("Đợi máy đọc xong rồi lắc nhé");return;}
@@ -366,7 +368,7 @@ function roll(){
       if(t<10){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
       else{
         clearInterval(h);
-        var res=[];for(var j=0;j<n;j++)res.push(take());
+        var res=[];for(var j=0;j<n;j++)res.push(takeRigged());
         show(res);
         res.forEach(function(c){cnt[c]++;});
         if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
@@ -385,3 +387,4 @@ tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
 </body></html>
+ 
