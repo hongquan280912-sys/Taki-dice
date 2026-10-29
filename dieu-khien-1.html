@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taki Dice - Điều khiển</title>
+<style>
+*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
+.box{width:100%;max-width:420px;background:rgba(255,255,255,.25);border:4px solid #fff;border-radius:22px;padding:14px;text-align:center}
+h2{color:#fff;margin:0 0 6px;font-size:26px;text-shadow:0 2px 4px #0a3d91}
+.sub{color:#fff;font-size:13px;margin-bottom:12px;opacity:.9}
+input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
+button{width:100%;min-height:52px;padding:14px;font-size:20px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:active{filter:brightness(.8)}
+button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#2a7a4b}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.seg button{width:auto;flex:1;min-width:0;min-height:44px;padding:8px 4px;margin:0;font-size:14px;background:rgba(255,255,255,.35);border:2px solid #fff;border-radius:10px}
+.seg button.on{background:#2a7a4b}
+.seg.ten button{flex:0 0 calc(20% - 5px)}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
+.lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
+.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
+#ban{min-height:30px;margin-top:10px;font-size:18px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
+#conn{font-size:12px;margin-bottom:8px;color:#fff;text-align:center}
+#conn.ok{color:#9fff9f}
+#conn.bad{color:#ffb0b0}
+#panel{display:none}
+#qrows{margin-top:6px}
+.qrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.qrow input{margin:0;flex:1}
+.qrow .sw{margin:0;flex:none}
+.qdel{width:auto;min-height:38px;padding:4px 10px;margin:0;background:#a02020;flex:none}
+#qadd{margin-top:4px}
+</style></head><body>
+<div class="box">
+<h2>🎮 Điều khiển — Taki Dice</h2>
+<div class="sub">Chọn chế độ, tên, màu trước — màn hình chính sẽ tự lắc xúc xắc.</div>
+<div id="conn">Đang kết nối...</div>
+
+<div class="seg" id="modeSeg"></div>
+
+<div id="panel">
+
+<div id="pn" style="display:none">
+ <div class="lb" style="margin-top:10px">Số xúc xắc</div>
+ <div class="seg" id="ndSeg"></div>
+</div>
+
+<div id="pe" style="display:none">
+ <div class="lb">Người 1</div>
+ <input id="n1" placeholder="Tên người 1">
+ <div class="sw" id="sw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="n2" placeholder="Tên người 2">
+ <div class="sw" id="sw2"></div>
+ <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+ <div class="seg ten" id="tgSeg"></div>
+</div>
+
+<div id="pq" style="display:none">
+ <div class="lb" style="margin-top:6px">Người chơi (chỉ lắc 1 xúc xắc, cho phép trùng màu)</div>
+ <div id="qrows"></div>
+ <button class="s" id="qadd">+ Thêm người</button>
+</div>
+
+</div>
+
+<button id="send">📤 Gửi cấu hình</button>
+<div id="ban"></div>
+
+<div class="n">Mở <b>man-hinh-chinh.html</b> trên điện thoại còn lại để xem xúc xắc và chơi — nó sẽ tự nhận cấu hình bạn gửi ở đây.</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+  authDomain: "taki-4b68b.firebaseapp.com",
+  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+  projectId: "taki-4b68b",
+  storageBucket: "taki-4b68b.firebasestorage.app",
+  messagingSenderId: "943690027603",
+  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+  measurementId: "G-CE9VKNFFX2"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var ROOM = "taki_room1"; // phải trùng với man-hinh-chinh.html
+var cfgRef = db.ref(ROOM + "/config");
+
+var connEl=document.getElementById("conn");
+db.ref(".info/connected").on("value",function(s){
+  if(s.val()===true){connEl.textContent="🟢 Đã kết nối";connEl.className="ok";}
+  else{connEl.textContent="🔴 Mất kết nối, đang thử lại...";connEl.className="bad";}
+});
+
+var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
+var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
+var mode="n",nd=4,tgt=5,sel1=4,sel2=2;
+var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
+var $=function(i){return document.getElementById(i);};
+
+function tap(el,fn){
+  var last=0;
+  function h(e){var now=Date.now();if(now-last<450)return;last=now;try{fn(e);}catch(err){}}
+  el.addEventListener("pointerup",h);
+  el.addEventListener("click",h);
+}
+function seg(id,labels,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  labels.forEach(function(l,i){
+    var b=document.createElement("button");b.textContent=l;
+    if(i===start)b.className="on";
+    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+function swatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
+
+/* ---------- EVENT 2 NGƯỜI ---------- */
+swatches("sw1",sel1,function(i){sel1=i;});
+swatches("sw2",sel2,function(i){sel2=i;});
+var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
+seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
+
+/* ---------- EVENT NHIỀU NGƯỜI ---------- */
+function buildQRows(){
+  var h="";
+  qp.forEach(function(p,i){
+    h+='<div class="qrow"><input data-i="'+i+'" class="qn" placeholder="Tên người '+(i+1)+'" value="'+(p.n||"")+'">'+
+       '<div class="sw" id="qs'+i+'"></div>'+
+       (qp.length>2?'<button class="qdel" data-i="'+i+'">✕</button>':'')+
+       '</div>';
+  });
+  $("qrows").innerHTML=h;
+  qp.forEach(function(p,i){
+    swatches("qs"+i,p.c,function(c){qp[i].c=c;});
+  });
+  document.querySelectorAll(".qn").forEach(function(inp){
+    inp.addEventListener("input",function(){qp[+inp.dataset.i].n=inp.value;});
+  });
+  document.querySelectorAll(".qdel").forEach(function(b){
+    tap(b,function(){qp.splice(+b.dataset.i,1);buildQRows();});
+  });
+}
+buildQRows();
+tap($("qadd"),function(){
+  if(qp.length>=8){banner("Tối đa 8 người");return;}
+  qp.push({n:"",c:qp.length%6});
+  buildQRows();
+});
+
+/* ---------- CHẾ ĐỘ ---------- */
+function setMode(m){
+  mode=m;
+  $("pn").style.display=m==="n"?"block":"none";
+  $("pe").style.display=m==="e"?"block":"none";
+  $("pq").style.display=m==="q"?"block":"none";
+  $("panel").style.display="block";
+}
+seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,function(i){setMode(["n","e","q"][i]);});
+seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
+setMode("n");
+
+/* ---------- GỬI CẤU HÌNH ---------- */
+var configId=Date.now();
+tap($("send"),function(){
+  if(mode==="e"&&sel1===sel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  configId=Date.now();
+  var cfg={mode:mode,configId:configId};
+  if(mode==="n"){
+    cfg.nd=nd;
+  } else if(mode==="e"){
+    cfg.ev={t:tgt,c1:sel1,c2:sel2,
+      n1:$("n1").value.trim()||"Người 1",
+      n2:$("n2").value.trim()||"Người 2"};
+  } else if(mode==="q"){
+    var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
+    cfg.q={players:players};
+  }
+  cfgRef.set(cfg);
+  banner("Đã gửi! Mở màn hình chính để chơi.");
+});
+</script>
+</body></html>
