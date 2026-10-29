@@ -48,7 +48,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien-1.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
+<div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -179,6 +179,7 @@ function playEvent(res){
   var a=res.filter(function(c){return c===ev.c1;}).length;
   var b=res.filter(function(c){return c===ev.c2;}).length;
   
+  // Xử lý tuyệt đối không có hòa: nếu bằng nhau, cộng dồn cho bên ép hoặc người 1
   if(a === b){
     if(ev.rig === 2) { b++; }
     else { a++; }
@@ -209,7 +210,7 @@ function playQ(res){
   else { q.house++; }
 }
 
-// Bắt sự kiện nhận cấu hình lập tức không bị kẹt
+// Lắng nghe nhận cấu hình chuẩn từ Firebase
 cfgRef.on("value", function(snap){
   var cfg = snap.val();
   if(!cfg) return;
@@ -235,6 +236,16 @@ cfgRef.on("value", function(snap){
   banner("Đã nhận cấu hình mới!");
 });
 
+var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
+function rndInt(n){
+  var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
+  do{
+    if(SECURE)window.crypto.getRandomValues(a);
+    else a[0]=Math.floor(Math.random()*4294967296);
+  }while(a[0]>=lim);
+  return a[0]%n;
+}
+
 function roll(){
   if(busy)return;
   if(mode==="e"){
@@ -244,13 +255,13 @@ function roll(){
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
-  setTimeout(function(){busy=false;},1500);
+  setTimeout(function(){busy=false;},1000);
   
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
     try{
       t++;
-      if(t<6){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
+      if(t<5){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
       else{
         clearInterval(h);
         var res=[];
@@ -298,7 +309,7 @@ function roll(){
         if(md==="q")playQ(res);
       }
     }catch(err){clearInterval(h);busy=false;}
-  },50);
+  },40);
 }
 tap($("roll"),roll);
 tap($("tv"),function(){});
