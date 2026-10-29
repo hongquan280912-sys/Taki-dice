@@ -48,15 +48,15 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
+<div id="waiting">⏳ Đang tải cấu hình...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
 <div id="dice"></div>
 <div id="ban"></div>
 <button id="roll">ROLL AGAIN !</button>
-<button class="s" id="tv">🔊 Thử giọng nói</button>
-<div id="vs"></div>
+<button class="s" id="tv" style="display:none">🔊 Thử giọng nói</button>
+<div id="vs" style="display:none"></div>
 
 <div class="n pc">Possible colors are:
 <b style="color:#f00">Red</b>, <b style="color:#ffa500">Orange</b>,
@@ -179,7 +179,6 @@ function playEvent(res){
   var a=res.filter(function(c){return c===ev.c1;}).length;
   var b=res.filter(function(c){return c===ev.c2;}).length;
   
-  // Xử lý tuyệt đối không có hòa: nếu bằng nhau, cộng dồn cho bên ép hoặc người 1
   if(a === b){
     if(ev.rig === 2) { b++; }
     else { a++; }
@@ -210,7 +209,6 @@ function playQ(res){
   else { q.house++; }
 }
 
-// Lắng nghe nhận cấu hình chuẩn từ Firebase
 cfgRef.on("value", function(snap){
   var cfg = snap.val();
   if(!cfg) return;
@@ -255,13 +253,13 @@ function roll(){
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
-  setTimeout(function(){busy=false;},1000);
+  setTimeout(function(){busy=false;},600);
   
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
     try{
       t++;
-      if(t<5){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
+      if(t<4){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
       else{
         clearInterval(h);
         var res=[];
@@ -309,10 +307,9 @@ function roll(){
         if(md==="q")playQ(res);
       }
     }catch(err){clearInterval(h);busy=false;}
-  },40);
+  },30);
 }
 tap($("roll"),roll);
-tap($("tv"),function(){});
 tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
