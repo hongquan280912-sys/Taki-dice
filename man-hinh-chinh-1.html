@@ -241,21 +241,36 @@ function scoreboard(msg){
 }
 
 function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1 xuất hiện
-  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2 xuất hiện
+  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1
+  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2
+  
+  var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
+  var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
   
   var m = "";
   
-  // TÍNH ĐIỂM CHUẨN XÁC 100% THEO SỐ LƯỢNG VIÊN HIỂN THỊ TRÊN MÀN HÌNH:
+  // Thuật toán giằng co đầu trận (dưới 3 điểm)
+  var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
+  
+  if(forceTieOrOpponent){
+    if(ev.rig === 1) { 
+      b = (b < a + 1) ? a + 1 : b; 
+    } else { 
+      a = (a < b + 1) ? b + 1 : a; 
+    }
+  }
+
+  // TÍNH ĐIỂM CHUẨN XÁC THEO ĐỘ LỆCH SỐ VIÊN (Ra 2 viên, kia 1 viên -> lệch 1 viên -> cộng 1 điểm)
   if(a > b){
-    ev.s1 += a;
-    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + a + ")";
+    var diff = a - b;
+    ev.s1 += diff;
+    m = ev.n1 + " có " + a + " viên, " + ev.n2 + " có " + b + " viên (" + ev.n1 + " +" + diff + ")";
   } else if(b > a){
-    ev.s2 += b;
-    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + b + ")";
+    var diff = b - a;
+    ev.s2 += diff;
+    m = ev.n2 + " có " + b + " viên, " + ev.n1 + " có " + a + " viên (" + ev.n2 + " +" + diff + ")";
   } else {
-    // Nếu số viên bằng nhau (ví dụ 1-1, hoặc 0-0 khi ra màu khác không ai chọn) -> HÒA, tuyệt đối không cộng điểm ai cả!
-    m = "Hòa (Không ai được cộng điểm)";
+    m = "Hòa (Số viên bằng nhau, không cộng điểm)";
   }
   
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
@@ -318,14 +333,14 @@ function roll(){
   if(busy)return;
   if(mode==="e"){
     if(!ev.on){banner("Chưa có cấu hình!");return;}
-    if(ev.over){banner("Đã có người thắng!");return;}
+    if(ev.over){banner("De có người thắng!");return;}
   }
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // LUÔN ĐỌC "36" MỖI KHI ROLL
+  // LUÔN ĐỌC "36" MỖI KHI BẤM ROLL
   say("36");
   
   var md=mode,n=(md==="q")?1:nd,t=0;
@@ -336,14 +351,19 @@ function roll(){
       else{
         clearInterval(h);
         var res=[];
-        if(md==="e" && ev.rig && ev.rig > 0){
+        
+        // CHẾ ĐỘ ROLL THƯỜNG (n): HOÀN TOÀN CÔNG BẰNG, LIÊM KHIẾT, THUẦN RANDOM 100%
+        if(md === "n"){
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        // CHẾ ĐỘ EVENT 2 NGƯỜI (e): CÓ GIAN LẬN THEO CẤU HÌNH RIG
+        else if(md === "e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          // Đầu trận (dưới 3 điểm) cho giằng co sát nút tự nhiên
           var isEarlyGame = (myScore < 3 && oppScore < 3);
           
           if(isEarlyGame && rndInt(100) < 55){
@@ -352,9 +372,8 @@ function roll(){
             for(var k=0; k<numOpp; k++) res.push(oppColor);
             for(var k=0; k<numTarget; k++) res.push(targetColor);
           } else {
-            // Khi vào cầu, người được chọn ép sẽ ra nhiều hơn đối thủ để ăn điểm chuẩn xác
             var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0); // 1 hoặc 2 viên
-            var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
+            var numOpp = rndInt(2); 
             
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
