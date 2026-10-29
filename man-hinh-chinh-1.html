@@ -260,7 +260,7 @@ function playEvent(res){
     }
   }
 
-  // TÍNH ĐIỂM CHUẨN XÁC THEO ĐỘ LỆCH SỐ VIÊN (Ra 2 viên, kia 1 viên -> lệch 1 viên -> cộng 1 điểm)
+  // TÍNH ĐIỂM CHUẨN XÁC THEO ĐỘ LỆCH SỐ VIÊN (VD: 2 viên trừ 1 viên = lệch 1 viên -> +1 điểm)
   if(a > b){
     var diff = a - b;
     ev.s1 += diff;
@@ -270,7 +270,7 @@ function playEvent(res){
     ev.s2 += diff;
     m = ev.n2 + " có " + b + " viên, " + ev.n1 + " có " + a + " viên (" + ev.n2 + " +" + diff + ")";
   } else {
-    m = "Hòa (Số viên bằng nhau, không cộng điểm)";
+    m = "Hòa (Số viên bằng nhau hoặc lệch 0, không cộng điểm)";
   }
   
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
@@ -333,14 +333,14 @@ function roll(){
   if(busy)return;
   if(mode==="e"){
     if(!ev.on){banner("Chưa có cấu hình!");return;}
-    if(ev.over){banner("De có người thắng!");return;}
+    if(ev.over){banner("Đã có người thắng!");return;}
   }
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // LUÔN ĐỌC "36" MỖI KHI BẤM ROLL
+  // LUÔN ĐỌC "36" MỖI KHI ROLL
   say("36");
   
   var md=mode,n=(md==="q")?1:nd,t=0;
