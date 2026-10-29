@@ -240,39 +240,30 @@ function scoreboard(msg){
   $("msg").textContent=msg||"";
 }
 
+/* ---------- TÍNH ĐIỂM THEO CHÊNH LỆCH SỐ VIÊN ----------
+   1-1 => hòa (chênh 0)
+   2-1 => người ra 2 viên +1 (chênh 1)
+   2-2 => hòa (chênh 0)
+   3-0 => người ra 3 viên +3 (chênh 3)
+*/
 function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1
-  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2
-  
-  var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-  var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-  
-  var m = "";
-  
-  // Thuật toán giằng co đầu trận (dưới 3 điểm)
-  var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
-  
-  if(forceTieOrOpponent){
-    if(ev.rig === 1) { 
-      b = (b < a + 1) ? a + 1 : b; 
-    } else { 
-      a = (a < b + 1) ? b + 1 : a; 
-    }
-  }
+  var a = res.filter(function(c){ return c === ev.c1; }).length;
+  var b = res.filter(function(c){ return c === ev.c2; }).length;
+  var head = ev.n1 + " " + a + " " + CS[ev.c1] + " - " + ev.n2 + " " + b + " " + CS[ev.c2] + " → ";
+  var m;
 
-  // TÍNH ĐIỂM CHUẨN XÁC THEO ĐỘ LỆCH SỐ VIÊN (VD: 2 viên trừ 1 viên = lệch 1 viên -> +1 điểm)
   if(a > b){
     var diff = a - b;
     ev.s1 += diff;
-    m = ev.n1 + " có " + a + " viên, " + ev.n2 + " có " + b + " viên (" + ev.n1 + " +" + diff + ")";
+    m = head + ev.n1 + " +" + diff;
   } else if(b > a){
     var diff = b - a;
     ev.s2 += diff;
-    m = ev.n2 + " có " + b + " viên, " + ev.n1 + " có " + a + " viên (" + ev.n2 + " +" + diff + ")";
+    m = head + ev.n2 + " +" + diff;
   } else {
-    m = "Hòa (Số viên bằng nhau hoặc lệch 0, không cộng điểm)";
+    m = head + "Hòa";
   }
-  
+
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
   if(win){
     ev.over = true;
@@ -285,11 +276,11 @@ function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
-  if(w.length){ 
-    w.forEach(function(p){p.w++;}); 
+  if(w.length){
+    w.forEach(function(p){p.w++;});
     say(w.map(function(p){return p.n;}).join(" và "));
-  } else { 
-    q.house++; 
+  } else {
+    q.house++;
     say("nhà cái thắng");
   }
 }
@@ -336,13 +327,12 @@ function roll(){
     if(ev.over){banner("Đã có người thắng!");return;}
   }
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
-  
+
   busy=true;
   setTimeout(function(){busy=false;},1000);
-  
-  // LUÔN ĐỌC "36" MỖI KHI ROLL
-  say("36");
-  
+
+  say("Ba mươi sáu");
+
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
     try{
@@ -351,34 +341,28 @@ function roll(){
       else{
         clearInterval(h);
         var res=[];
-        
-        // CHẾ ĐỘ ROLL THƯỜNG (n): HOÀN TOÀN CÔNG BẰNG, LIÊM KHIẾT, THUẦN RANDOM 100%
-        if(md === "n"){
-          for(var j=0;j<n;j++)res.push(rndInt(6));
-        }
-        // CHẾ ĐỘ EVENT 2 NGƯỜI (e): CÓ GIAN LẬN THEO CẤU HÌNH RIG
-        else if(md === "e" && ev.rig && ev.rig > 0){
+        if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
-          
+
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-          
+
           var isEarlyGame = (myScore < 3 && oppScore < 3);
-          
+
           if(isEarlyGame && rndInt(100) < 55){
             var numOpp = 1 + rndInt(2);
             var numTarget = rndInt(2);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
             for(var k=0; k<numTarget; k++) res.push(targetColor);
           } else {
-            var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0); // 1 hoặc 2 viên
-            var numOpp = rndInt(2); 
-            
+            var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0);
+            var numOpp = rndInt(2);
+
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
           }
-          
+
           while(res.length < n){
             var c = rndInt(6);
             if(c !== targetColor && c !== oppColor) {
@@ -391,7 +375,7 @@ function roll(){
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
-        
+
         show(res);
         res.forEach(function(c){cnt[c]++;});
         if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
@@ -405,7 +389,7 @@ function roll(){
   },25);
 }
 tap($("roll"),roll);
-tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
+tap($("tv"),function(){if(talking)return;stopSpeech();say("Ba mươi sáu");});
 tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
