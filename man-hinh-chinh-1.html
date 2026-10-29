@@ -137,21 +137,81 @@ tap($("zm"),function(){if(zi>0){zi--;applyView();}});
 tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
 tap($("mn"),function(){mini=!mini;applyView();});
 
-var voices=[];
-var ae=new Audio();ae.preload="auto";
-var SIL="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
-var unl=false;
-function unlock(){
-  if(unl)return;unl=true;
-  try{ae.src=SIL;var p=ae.play();if(p&&p.catch)p.catch(function(){});}catch(e){}
-}
-document.addEventListener("pointerdown",unlock);
-document.addEventListener("click",unlock);
-document.addEventListener("touchstart",unlock,{passive:true});
-
-function vstat(t){$("vs").textContent=t;}
 function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
 
-function loadV(){try{voices=window.speechSynthesis.getVoices()||[];}catch(e){}}
-try{if(window.speechSynthesis){loadV();window.speechSynthesis.onvoiceschanged
-                               
+function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
+function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
+function stats(){
+  $("st").innerHTML=row(cnt);
+  var c20=[0,0,0,0,0,0];
+  rolls.forEach(function(r){r.forEach(function(c){c20[c]++;});});
+  $("st20").innerHTML=row(c20);
+  $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
+  var h="";
+  rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
+  $("hist").innerHTML=h;
+}
+function show(res){
+  box.innerHTML="";
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
+function esc(s){return (s||"").replace(/[&<>]/g,"");}
+
+$("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
+tap($("t1k"),function(){
+  var c=[0,0,0,0,0,0],i;
+  for(i=0;i<4000;i++)c[rndInt(6)]++;
+  var mx=Math.max.apply(null,c),mn=Math.min.apply(null,c);
+  $("t1r").style.display="block";
+  $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
+});
+
+function scoreboard(msg){
+  $("score").style.display="block";
+  $("sc").innerHTML='<span style="color:'+C[ev.c1]+'">'+esc(ev.n1)+'</span> '+ev.s1+' - '+ev.s2+
+    ' <span style="color:'+C[ev.c2]+'">'+esc(ev.n2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+ev.t+' điểm thắng</div>';
+  $("msg").textContent=msg||"";
+}
+
+function playEvent(res){
+  var a=res.filter(function(c){return c===ev.c1;}).length;
+  var b=res.filter(function(c){return c===ev.c2;}).length;
+  
+  if(a === b){
+    if(ev.rig === 2) { b++; }
+    else { a++; }
+  }
+
+  var m="";
+  if(a > b){
+    ev.s1 += 1;
+    m = ev.n1 + " nhiều hơn → " + ev.n1 + " +1 điểm";
+  } else {
+    ev.s2 += 1;
+    m = ev.n2 + " nhiều hơn → " + ev.n2 + " +1 điểm";
+  }
+  
+  var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
+  if(win){
+    ev.over = true;
+    m += " | " + win + " THẮNG CHUNG CUỘC!";
+  }
+  scoreboard(m);
+}
+
+function playQ(res){
+  q.rounds++;
+  var col=res[0];
+  var w=q.p.filter(function(p){return p.c===col;});
+  if(w.length){ w.forEach(function(p){p.w++;}); }
+  else { q.house++; }
+}
+
+function applyConfig(cfg){
+  $("waiting").style.display="none";
+  mode=cfg.mode||"n";
+  nd=cfg.
+ 
