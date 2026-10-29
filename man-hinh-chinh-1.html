@@ -241,36 +241,21 @@ function scoreboard(msg){
 }
 
 function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1
-  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2
-  
-  var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-  var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
+  var a = res.filter(function(c){ return c === ev.c1; }).length; // Số viên Người 1 xuất hiện
+  var b = res.filter(function(c){ return c === ev.c2; }).length; // Số viên Người 2 xuất hiện
   
   var m = "";
   
-  // Thuật toán giằng co đầu trận (dưới 3 điểm)
-  var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
-  
-  if(forceTieOrOpponent){
-    if(ev.rig === 1) { 
-      b = (b < a + 1) ? a + 1 : b; 
-    } else { 
-      a = (a < b + 1) ? b + 1 : a; 
-    }
-  }
-
-  // TÍNH ĐIỂM CHUẨN THEO SỐ LƯỢNG VIÊN THỰC TẾ (Ra mấy viên cộng bấy nhiêu điểm)
+  // TÍNH ĐIỂM CHUẨN XÁC 100% THEO SỐ LƯỢNG VIÊN HIỂN THỊ TRÊN MÀN HÌNH:
   if(a > b){
-    var pts = a; // Lấy đúng số viên làm số điểm cộng thêm
-    ev.s1 += pts;
-    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + pts + ")";
+    ev.s1 += a;
+    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + a + ")";
   } else if(b > a){
-    var pts = b; // Lấy đúng số viên làm số điểm cộng thêm
-    ev.s2 += pts;
-    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + pts + ")";
+    ev.s2 += b;
+    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + b + ")";
   } else {
-    m = "Hòa (Cả hai có số viên bằng nhau)";
+    // Nếu số viên bằng nhau (ví dụ 1-1, hoặc 0-0 khi ra màu khác không ai chọn) -> HÒA, tuyệt đối không cộng điểm ai cả!
+    m = "Hòa (Không ai được cộng điểm)";
   }
   
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
@@ -340,7 +325,7 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // MỖI KHI ROLL SẼ ĐỌC "36"
+  // LUÔN ĐỌC "36" MỖI KHI ROLL
   say("36");
   
   var md=mode,n=(md==="q")?1:nd,t=0;
@@ -358,16 +343,18 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          var forceTieOrOpponent = (myScore < 3 && oppScore < 3 && rndInt(100) < 55);
+          // Đầu trận (dưới 3 điểm) cho giằng co sát nút tự nhiên
+          var isEarlyGame = (myScore < 3 && oppScore < 3);
           
-          if(forceTieOrOpponent){
-            var numOpp = 1 + rndInt(2); 
-            var numTarget = rndInt(2);   
+          if(isEarlyGame && rndInt(100) < 55){
+            var numOpp = 1 + rndInt(2);
+            var numTarget = rndInt(2);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
             for(var k=0; k<numTarget; k++) res.push(targetColor);
           } else {
+            // Khi vào cầu, người được chọn ép sẽ ra nhiều hơn đối thủ để ăn điểm chuẩn xác
             var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0); // 1 hoặc 2 viên
-            var numOpp = rndInt(2); 
+            var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
             
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
