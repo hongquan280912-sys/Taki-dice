@@ -253,7 +253,7 @@ function roll(){
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
-  setTimeout(function(){busy=false;},600);
+  setTimeout(function(){busy=false;},500);
   
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
@@ -264,31 +264,22 @@ function roll(){
         clearInterval(h);
         var res=[];
         if(md==="e" && ev.rig && ev.rig > 0){
+          // rig === 1 -> Người 1 (c1) luôn thắng, rig === 2 -> Người 2 (c2) luôn thắng
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
+          // Đảm bảo bên được chọn luôn ra nhiều viên hơn để ăn điểm chắc chắn
+          var numTarget = 2 + (rndInt(100) < 50 ? 1 : 0); // 2 hoặc 3 viên
+          var numOpp = rndInt(2); // 0 hoặc 1 viên của đối thủ
           
-          var forceOpponentLead = (myScore === 0 && oppScore < 3 && rndInt(100) < 50);
-          
-          if(forceOpponentLead) {
-            var numOpp = 2; 
-            var numTarget = 1;  
-            for(var k=0; k<numOpp; k++) res.push(oppColor);
-            for(var k=0; k<numTarget; k++) res.push(targetColor);
-          } else {
-            var numTarget = 1; 
-            if(rndInt(100) < 30) numTarget = 2;
-            var numOpp = 1; 
-            for(var k=0; k<numOpp; k++) res.push(oppColor);
-          }
+          for(var k=0; k<numTarget; k++) res.push(targetColor);
+          for(var k=0; k<numOpp; k++) res.push(oppColor);
           
           while(res.length < n){
             var c = rndInt(6);
             if(c !== targetColor && c !== oppColor) {
               res.push(c);
-            } else if(rndInt(100) < 20) {
+            } else if(rndInt(100) < 15) {
               res.push(c);
             }
           }
@@ -307,7 +298,7 @@ function roll(){
         if(md==="q")playQ(res);
       }
     }catch(err){clearInterval(h);busy=false;}
-  },30);
+  },25);
 }
 tap($("roll"),roll);
 tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
