@@ -13,11 +13,9 @@ h2{color:#fff;margin:0 0 10px;font-size:30px;text-shadow:0 2px 4px #0a3d91}
 button{width:100%;min-height:52px;padding:14px;font-size:22px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 button:active{filter:brightness(.8)}
 button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2a7a4b}
-#tb{display:flex;gap:6px;justify-content:space-between;margin-bottom:6px;align-items:center}
+#tb{display:flex;gap:6px;justify-content:flex-end;margin-bottom:6px;align-items:center}
 #tb .r{display:flex;gap:6px}
 #tb button{width:auto;min-height:38px;padding:4px 10px;font-size:14px;background:rgba(0,0,0,.35);border:2px solid #fff;border-radius:8px}
-#conn{font-size:12px;color:#fff;opacity:.8}
-#conn.bad{color:#ffb0b0;opacity:1}
 .lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
 .n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px}
 .row{display:flex;justify-content:space-between;gap:4px;margin-top:6px}
@@ -30,20 +28,18 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #rs{margin-top:8px;background:none;border:none;color:#fff;font-size:14px;text-decoration:underline;padding:8px;width:auto;min-height:40px}
 #ban{min-height:34px;margin-top:10px;font-size:22px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
 #vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
-#score,#score4{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
-#sc4 div{font-size:18px;text-align:left;margin:3px 0}
-#msg,#msg4{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
+#score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
+#msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
 #waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
 .box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
-.box.mini #score,.box.mini #score4{font-size:16px;margin-top:6px}
+.box.mini #score{font-size:16px;margin-top:6px}
 </style></head><body>
 <div class="box">
 <div id="tb">
- <div id="conn">Đang kết nối...</div>
  <div class="r">
   <button id="zm" aria-label="Thu nhỏ cỡ khung">A−</button>
   <button id="zp" aria-label="Phóng to cỡ khung">A＋</button>
@@ -55,7 +51,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="waiting">⏳ Chưa có cấu hình. Mở <b>dieu-khien.html</b> trên điện thoại kia, chọn chế độ/màu/tên rồi bấm "Gửi cấu hình".</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
-<div id="score4"><div id="sc4"></div><div id="msg4"></div></div>
 
 <div id="dice"></div>
 <div id="ban"></div>
@@ -99,12 +94,6 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var ROOM = "taki_room1";
 var cfgRef = db.ref(ROOM + "/config");
-
-var connEl=document.getElementById("conn");
-db.ref(".info/connected").on("value",function(s){
-  if(s.val()===true){connEl.textContent="🟢 Đã kết nối";connEl.className="";}
-  else{connEl.textContent="🔴 Mất kết nối...";connEl.className="bad";}
-});
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -279,31 +268,18 @@ function playEvent(res){
   if(!who)say("Hòa");
 }
 
-function scoreQ(msg){
-  $("score4").style.display="block";
-  var h="";
-  q.p.forEach(function(p){
-    h+='<div><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:'+C[p.c]+'"></span> '+esc(p.n)+': '+p.w+' lần thắng</div>';
-  });
-  h+='<div>😺 taki đẹp trai: '+q.house+' lần thắng</div><div style="font-size:13px;font-weight:normal">Số lượt đã chơi: '+q.rounds+'</div>';
-  $("sc4").innerHTML=h;
-  $("msg4").textContent=msg||"";
-}
 function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
-  var m,s;
+  var s;
   if(w.length){
     w.forEach(function(p){p.w++;});
     s=w.map(function(p){return p.n;}).join(" và ");
-    m="Ra màu "+CS[col]+" → "+s+" thắng";
   }else{
     q.house++;
     s="taki đẹp trai thắng";
-    m="Ra màu "+CS[col]+", không ai chọn → taki đẹp trai thắng";
   }
-  scoreQ(m);
   if(!w.length)say(s);
 }
 
@@ -313,7 +289,6 @@ function applyConfig(cfg){
   mode=cfg.mode||"n";
   nd=cfg.nd||4;
   $("score").style.display="none";
-  $("score4").style.display="none";
   ev.on=false;q.on=false;
 
   if(mode==="e"&&cfg.ev){
@@ -324,7 +299,6 @@ function applyConfig(cfg){
   } else if(mode==="q"&&cfg.q&&cfg.q.players){
     var p=cfg.q.players.map(function(x){return {n:x.n,c:x.c,w:0};});
     q={on:true,rounds:0,house:0,p:p};
-    scoreQ("Bắt đầu! Bấm ROLL để chơi");
   }
   show(mode==="q"?[0]:[0,1,2,3,4,5].slice(0,nd));
   banner("Đã nhận cấu hình mới!");
@@ -366,25 +340,21 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          // Đầu trận tạo thế trận giằng co hoặc để đối thủ dẫn trước 1-2 ván cho tự nhiên
           var forceOpponentLead = (myScore === 0 && oppScore < 3 && rndInt(100) < 55);
           
           if(forceOpponentLead) {
-            var numOpp = 2 + rndInt(2); // 2 hoặc 3 viên của đối thủ
-            var numTarget = rndInt(2);  // 0 hoặc 1 viên màu ép
+            var numOpp = 2 + rndInt(2); 
+            var numTarget = (rndInt(100) < 50) ? 1 : 0; // Chỉ cho 0 hoặc 1 viên màu ép khi đối thủ dẫn
             for(var k=0; k<numOpp; k++) res.push(oppColor);
             for(var k=0; k<numTarget; k++) res.push(targetColor);
           } else {
-            // Lật kèo tinh tế: chỉ ra 1 hoặc 2 viên (lâu lâu 3 viên) màu ép để tăng điểm từ từ
-            var numTarget = 1 + rndInt(2); 
-            if(rndInt(100) < 20) numTarget = 3; 
-            
+            // Chỉ định hình chủ yếu ra 1 hoặc 2 viên màu ép (tuyệt đối không bao giờ ra 3 hay 4 viên)
+            var numTarget = 1 + rndInt(2); // Trả về 1 hoặc 2
             var numOpp = rndInt(2); 
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
           }
           
-          // Điền các ô xúc xắc còn lại bằng màu ngẫu nhiên khác để giống thật
           while(res.length < n){
             var c = rndInt(6);
             if(c !== targetColor && c !== oppColor) {
@@ -393,7 +363,6 @@ function roll(){
               res.push(c);
             }
           }
-          // Trộn ngẫu nhiên vị trí các viên xúc xắc
           res.sort(function(){ return Math.random() - 0.5; });
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
