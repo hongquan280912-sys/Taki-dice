@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taki Dice - Điều khiển (Phone)</title>
+<style>
+*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
+.box{width:100%;max-width:420px;background:rgba(255,255,255,.25);border:4px solid #fff;border-radius:22px;padding:14px;text-align:center}
+h2{color:#fff;margin:0 0 10px;font-size:26px;text-shadow:0 2px 4px #0a3d91}
+input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
+#dice{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:14px 0;min-height:70px}
+.d{width:50px;height:50px;border:4px solid #fff;border-radius:12px;box-shadow:0 0 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
+.d i{width:10px;height:10px;border-radius:50%;background:#fff}
+button{width:100%;min-height:52px;padding:14px;font-size:22px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:active{filter:brightness(.8)}
+button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2a7a4b}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.seg button{width:auto;flex:1;min-width:0;min-height:44px;padding:8px 4px;margin:0;font-size:14px;background:rgba(255,255,255,.35);border:2px solid #fff;border-radius:10px}
+.seg button.on{background:#2a7a4b}
+.seg.ten button{flex:0 0 calc(20% - 5px)}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
+.lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
+.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
+#ev,#ev4{display:none;margin-top:12px;padding:10px;background:rgba(0,0,0,.35);border-radius:12px;color:#fff;text-align:left}
+#score,#score4{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:18px;font-weight:bold;color:#222;text-align:left}
+#sc4 div{font-size:16px;text-align:left;margin:3px 0}
+#msg,#msg4{font-size:13px;font-weight:normal;color:#444;margin-top:4px}
+#ban{min-height:30px;margin-top:10px;font-size:18px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
+#conn{font-size:12px;margin-top:8px;color:#fff;text-align:center}
+#conn.ok{color:#9fff9f}
+#conn.bad{color:#ffb0b0}
+</style></head><body>
+<div class="box">
+<h2>📱 Điều khiển — Taki Dice</h2>
+<div id="conn">Đang kết nối...</div>
+<div class="seg" id="modeSeg"></div>
+
+<div id="ev">
+ <div class="lb">Người 1</div>
+ <input id="n1" placeholder="Tên người 1">
+ <div class="sw" id="sw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="n2" placeholder="Tên người 2">
+ <div class="sw" id="sw2"></div>
+ <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+ <div class="seg ten" id="tgSeg"></div>
+ <button class="s" id="go">Bắt đầu / Chơi lại</button>
+</div>
+<div id="score"><div id="sc"></div><div id="msg"></div></div>
+
+<div id="ev4">
+ <div id="q4rows"></div>
+ <div style="font-size:12px">Chỉ lắc 1 viên xúc xắc. Cho phép nhiều người chọn cùng màu.</div>
+ <button class="s" id="go4">Bắt đầu / Chơi lại</button>
+</div>
+<div id="score4"><div id="sc4"></div><div id="msg4"></div></div>
+
+<div id="ndWrap">
+ <div class="lb" style="margin-top:10px">Số xúc xắc</div>
+ <div class="seg" id="ndSeg"></div>
+</div>
+<div id="dice"></div>
+<div id="ban"></div>
+<button id="roll">ROLL AGAIN !</button>
+<div class="n">Màn hình này dùng để điều khiển. Mở <b>pc.html</b> trên máy tính để chiếu live — nó sẽ tự đồng bộ theo màn hình này.</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+  authDomain: "taki-4b68b.firebaseapp.com",
+  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+  projectId: "taki-4b68b",
+  storageBucket: "taki-4b68b.firebasestorage.app",
+  messagingSenderId: "943690027603",
+  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+  measurementId: "G-CE9VKNFFX2"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var ROOM = "taki_room1"; // đổi tên phòng nếu muốn tách nhiều bàn
+var ref = db.ref(ROOM);
+
+var connEl=document.getElementById("conn");
+db.ref(".info/connected").on("value",function(s){
+  if(s.val()===true){connEl.textContent="🟢 Đã kết nối";connEl.className="ok";}
+  else{connEl.textContent="🔴 Mất kết nối, đang thử lại...";connEl.className="bad";}
+});
+
+var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
+var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
+var mode="n",nd=4,tgt=5,sel1=4,sel2=2,qsel=[0,2,4,3];
+var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
+var q={on:false,rounds:0,house:0,p:[]};
+var busy=false;
+var box=document.getElementById("dice"),ban=document.getElementById("ban");
+var $=function(i){return document.getElementById(i);};
+
+function tap(el,fn){
+  var last=0;
+  function h(e){var now=Date.now();if(now-last<450)return;last=now;try{fn(e);}catch(err){}}
+  el.addEventListener("pointerup",h);
+  el.addEventListener("click",h);
+}
+function seg(id,labels,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  labels.forEach(function(l,i){
+    var b=document.createElement("button");b.textContent=l;
+    if(i===start)b.className="on";
+    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+function swatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+function esc(s){return s.replace(/[&<>]/g,"");}
+function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
+
+var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
+function rndInt(n){
+  var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
+  do{if(SECURE)window.crypto.getRandomValues(a);else a[0]=Math.floor(Math.random()*4294967296);}while(a[0]>=lim);
+  return a[0]%n;
+}
+function take(){return rndInt(6);}
+function show(res){
+  box.innerHTML="";
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
+
+function scoreboard(msg){
+  $("score").style.display="block";
+  $("sc").innerHTML='<span style="color:'+C[ev.c1]+'">'+esc(ev.n1)+'</span> '+ev.s1+' - '+ev.s2+
+    ' <span style="color:'+C[ev.c2]+'">'+esc(ev.n2)+'</span><div style="font-size:12px;font-weight:normal">Chạm '+ev.t+' điểm thắng</div>';
+  $("msg").textContent=msg||"";
+}
+function scoreQ(msg){
+  $("score4").style.display="block";
+  var h="";
+  q.p.forEach(function(p){
+    h+='<div><span style="display:inline-block;width:12px;height:12px;border-radius:4px;background:'+C[p.c]+'"></span> '+esc(p.n)+': '+p.w+' lần thắng</div>';
+  });
+  h+='<div>😺 taki đẹp trai: '+q.house+' lần thắng</div><div style="font-size:12px;font-weight:normal">Số lượt đã chơi: '+q.rounds+'</div>';
+  $("sc4").innerHTML=h;
+  $("msg4").textContent=msg||"";
+}
+
+/* ---------- gửi state lên Firebase để PC đọc ---------- */
+function pushState(extra){
+  var state={
+    mode:mode,nd:nd,
+    ev:ev,q:q,
+    ts:firebase.database.ServerValue.TIMESTAMP
+  };
+  if(extra)for(var k in extra)state[k]=extra[k];
+  ref.set(state);
+}
+
+/* ---------- EVENT 2 NGƯỜI ---------- */
+swatches("sw1",sel1,function(i){sel1=i;});
+swatches("sw2",sel2,function(i){sel2=i;});
+var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
+seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
+tap($("go"),function(){
+  if(sel1===sel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  ev={on:true,over:false,s1:0,s2:0,t:tgt,c1:sel1,c2:sel2,
+      n1:$("n1").value.trim()||"Người 1",n2:$("n2").value.trim()||"Người 2"};
+  scoreboard("Bắt đầu! Bấm ROLL để chơi");
+  banner("Bắt đầu!");
+  pushState({dice:null,banner:"Bắt đầu!"});
+});
+function playEvent(res){
+  var a=res.filter(function(c){return c===ev.c1;}).length;
+  var b=res.filter(function(c){return c===ev.c2;}).length;
+  var m=ev.n1+" "+a+" "+CS[ev.c1]+" - "+ev.n2+" "+b+" "+CS[ev.c2]+" → ";
+  if(a>b){ev.s1+=a-b;m+=ev.n1+" +"+(a-b);}
+  else if(b>a){ev.s2+=b-a;m+=ev.n2+" +"+(b-a);}
+  else{m+="Hòa";}
+  var win=ev.s1>=ev.t?ev.n1:(ev.s2>=ev.t?ev.n2:"");
+  if(win){ev.over=true;m+=" | "+win+" THẮNG!";}
+  scoreboard(m);
+  return m;
+}
+
+/* ---------- EVENT NHIỀU NGƯỜI (1 XÚC XẮC) ---------- */
+var NQ=4;
+function buildQRows(){
+  var h="",i;
+  for(i=0;i<NQ;i++)h+='<div class="lb">Người '+(i+1)+'</div><input id="qn'+i+'" placeholder="Tên người '+(i+1)+'"><div class="sw" id="qs'+i+'"></div>';
+  $("q4rows").innerHTML=h;
+  for(i=0;i<NQ;i++)(function(k){swatches("qs"+k,qsel[k]||0,function(c){qsel[k]=c;});})(i);
+}
+buildQRows();
+tap($("go4"),function(){
+  var p=[];
+  for(var i=0;i<NQ;i++)p.push({n:$("qn"+i).value.trim()||"Người "+(i+1),c:qsel[i]||0,w:0});
+  q={on:true,rounds:0,house:0,p:p};
+  scoreQ("Bắt đầu! Bấm ROLL để chơi");
+  banner("Bắt đầu!");
+  pushState({dice:null,banner:"Bắt đầu!"});
+});
+function playQ(res){
+  q.rounds++;
+  var col=res[0];
+  var w=q.p.filter(function(p){return p.c===col;});
+  var m,s;
+  if(w.length){
+    w.forEach(function(p){p.w++;});
+    s=w.map(function(p){return p.n;}).join(" và ");
+    m="Ra màu "+CS[col]+" → "+s+" thắng";
+  }else{
+    q.house++;
+    m="Ra màu "+CS[col]+", không ai chọn → taki đẹp trai thắng";
+  }
+  scoreQ(m);
+  return m;
+}
+
+/* ---------- CHẾ ĐỘ + SỐ XÚC XẮC ---------- */
+function setMode(m){
+  mode=m;
+  $("ev").style.display=m==="e"?"block":"none";
+  $("ev4").style.display=m==="q"?"block":"none";
+  if(m!=="e"){$("score").style.display="none";ev.on=false;}
+  if(m!=="q"){$("score4").style.display="none";q.on=false;}
+  $("ndWrap").style.display=m==="q"?"none":"block";
+  show(m==="q"?[0]:[0,1,2,3,4,5].slice(0,nd));
+  pushState({dice:null,banner:""});
+}
+seg("modeSeg",["Roll thường","Event nhiều","Event 1 xúc xắc"],0,function(i){setMode(["n","e","q"][i]);});
+seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){
+  nd=i+1;show([0,1,2,3,4,5].slice(0,nd));
+});
+
+/* ---------- ROLL ---------- */
+function roll(){
+  if(busy)return;
+  if(mode==="e"){
+    if(!ev.on){banner("Bấm Bắt đầu trước nhé");return;}
+    if(ev.over){banner("Đã có người thắng, bấm Chơi lại");return;}
+  }
+  if(mode==="q"&&!q.on){banner("Bấm Bắt đầu trước nhé");return;}
+  busy=true;
+  setTimeout(function(){busy=false;},2500);
+  banner("taki đẹp trai");
+  pushState({dice:null,banner:"taki đẹp trai",rolling:true});
+  var md=mode,n=(md==="q")?1:nd,t=0;
+  var h=setInterval(function(){
+    try{
+      t++;
+      if(t<10){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
+      else{
+        clearInterval(h);
+        var res=[];for(var j=0;j<n;j++)res.push(take());
+        show(res);
+        busy=false;
+        var msg="";
+        if(md==="e")msg=playEvent(res);
+        if(md==="q")msg=playQ(res);
+        pushState({dice:res,banner:msg||"",rolling:false});
+      }
+    }catch(err){clearInterval(h);busy=false;}
+  },70);
+}
+tap($("roll"),roll);
+
+setMode("n");
+show([0,1,2,3]);
+pushState({dice:null,banner:""});
+</script>
+</body></html>

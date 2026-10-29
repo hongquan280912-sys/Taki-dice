@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taki Dice - Màn hình chính</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Arial,sans-serif;background:radial-gradient(ellipse at center,#4a7fc0 0%,#2a4e7a 100%);display:flex;align-items:center;justify-content:center}
+.wrap{width:100%;max-width:1100px;padding:clamp(16px,5vw,40px);text-align:center}
+h1{color:#fff;font-size:clamp(24px,7vw,56px);margin:0 0 16px;text-shadow:0 4px 10px rgba(0,0,0,.4);letter-spacing:1px}
+#dice{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(10px,3vw,28px);margin:20px 0;min-height:clamp(70px,22vw,180px)}
+.d{width:clamp(56px,20vw,150px);height:clamp(56px,20vw,150px);border:clamp(4px,1.2vw,8px) solid #fff;border-radius:clamp(14px,5vw,34px);box-shadow:0 10px 30px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:transform .08s}
+.d i{width:22%;height:22%;border-radius:50%;background:#fff}
+#ban{min-height:40px;font-size:clamp(18px,5.5vw,40px);font-weight:bold;color:#fff;text-shadow:0 4px 10px rgba(0,0,0,.4);margin-top:10px}
+#score{display:none;margin:16px auto;max-width:700px;background:rgba(255,255,255,.95);border-radius:20px;padding:clamp(14px,4vw,24px) clamp(14px,5vw,30px);font-size:clamp(20px,6vw,42px);font-weight:bold;color:#222;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#score .sub{font-size:clamp(13px,3.5vw,20px);font-weight:normal;color:#555;margin-top:6px}
+#score4{display:none;margin:16px auto;max-width:700px;background:rgba(255,255,255,.95);border-radius:20px;padding:clamp(14px,4vw,24px) clamp(14px,5vw,30px);box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:left}
+#score4 .row4{display:flex;align-items:center;gap:10px;font-size:clamp(16px,4.5vw,28px);font-weight:bold;color:#222;margin:6px 0}
+#score4 .row4 .sw{width:clamp(16px,4vw,26px);height:clamp(16px,4vw,26px);border-radius:6px;flex:none}
+#score4 .house{font-size:clamp(14px,4vw,24px);color:#555;margin-top:10px}
+#msg4{font-size:clamp(13px,3.5vw,20px);color:#666;margin-top:10px;font-weight:normal}
+#conn{position:fixed;top:10px;right:14px;font-size:12px;color:#fff;opacity:.7}
+#conn.bad{color:#ffb0b0;opacity:1}
+</style></head><body>
+<div id="conn">Đang kết nối...</div>
+<div class="wrap">
+<h1>🎲 Zalo meo meo 🎲</h1>
+<div id="dice"></div>
+<div id="ban"></div>
+<div id="score"><div id="sc"></div><div class="sub" id="scsub"></div></div>
+<div id="score4">
+  <div id="sc4rows"></div>
+  <div class="house" id="schouse"></div>
+  <div id="msg4"></div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+  authDomain: "taki-4b68b.firebaseapp.com",
+  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+  projectId: "taki-4b68b",
+  storageBucket: "taki-4b68b.firebasestorage.app",
+  messagingSenderId: "943690027603",
+  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+  measurementId: "G-CE9VKNFFX2"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var ROOM = "taki_room1"; // phải trùng với phone.html
+var ref = db.ref(ROOM);
+
+var connEl=document.getElementById("conn");
+db.ref(".info/connected").on("value",function(s){
+  if(s.val()===true){connEl.textContent="🟢 Live";connEl.className="";}
+  else{connEl.textContent="🔴 Mất kết nối...";connEl.className="bad";}
+});
+
+var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
+var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
+var box=document.getElementById("dice"),ban=document.getElementById("ban");
+var lastTs=0,rollTimer=null;
+
+function esc(s){return (s||"").replace(/[&<>]/g,"");}
+function show(res){
+  box.innerHTML="";
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
+function rndInt(n){return Math.floor(Math.random()*n);}
+
+function renderScore(state){
+  var mode=state.mode;
+  document.getElementById("score").style.display="none";
+  document.getElementById("score4").style.display="none";
+  if(mode==="e"&&state.ev&&state.ev.on){
+    var ev=state.ev;
+    document.getElementById("score").style.display="block";
+    document.getElementById("sc").innerHTML=
+      '<span style="color:'+C[ev.c1]+'">'+esc(ev.n1)+'</span> '+ev.s1+' - '+ev.s2+
+      ' <span style="color:'+C[ev.c2]+'">'+esc(ev.n2)+'</span>';
+    document.getElementById("scsub").textContent="Chạm "+ev.t+" điểm thắng"+(ev.over?" — ĐÃ KẾT THÚC":"");
+  }
+  if(mode==="q"&&state.q&&state.q.on){
+    var q=state.q;
+    document.getElementById("score4").style.display="block";
+    var h="";
+    (q.p||[]).forEach(function(p){
+      h+='<div class="row4"><span class="sw" style="background:'+C[p.c]+'"></span>'+esc(p.n)+': '+p.w+'</div>';
+    });
+    document.getElementById("sc4rows").innerHTML=h;
+    document.getElementById("schouse").textContent="😺 taki đẹp trai: "+q.house+" lần thắng — Số lượt: "+q.rounds;
+    document.getElementById("msg4").textContent=state.banner||"";
+  }
+}
+
+ref.on("value",function(snap){
+  var state=snap.val();
+  if(!state)return;
+  var ts=(typeof state.ts==="number")?state.ts:0;
+
+  if(state.rolling && ts!==lastTs){
+    lastTs=ts;
+    clearInterval(rollTimer);
+    var n=(state.mode==="q")?1:(state.nd||4);
+    var t=0;
+    ban.textContent=state.banner||"";
+    rollTimer=setInterval(function(){
+      t++;
+      var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));
+      show(f);
+      if(t>14)clearInterval(rollTimer);
+    },70);
+  } else if(!state.rolling){
+    clearInterval(rollTimer);
+    if(state.dice && state.dice.length)show(state.dice);
+    ban.textContent=state.banner||"";
+  }
+  renderScore(state);
+});
+</script>
+</body></html>
