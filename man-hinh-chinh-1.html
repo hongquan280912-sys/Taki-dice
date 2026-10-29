@@ -226,16 +226,6 @@ function rndInt(n){
 }
 function take(){return rndInt(6);}
 
-function takeRigged(){
-  if(mode==="e" && ev.rig && ev.rig > 0){
-    var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
-    if(rndInt(100) < 70){
-      return targetColor;
-    }
-  }
-  return rndInt(6);
-}
-
 function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
 function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
 function stats(){
@@ -368,7 +358,47 @@ function roll(){
       if(t<10){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
       else{
         clearInterval(h);
-        var res=[];for(var j=0;j<n;j++)res.push(takeRigged());
+        var res=[];
+        if(md==="e" && ev.rig && ev.rig > 0){
+          var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
+          var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
+          
+          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
+          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
+          
+          // Đầu trận tạo thế trận giằng co hoặc để đối thủ dẫn trước 1-2 ván cho tự nhiên
+          var forceOpponentLead = (myScore === 0 && oppScore < 3 && rndInt(100) < 55);
+          
+          if(forceOpponentLead) {
+            var numOpp = 2 + rndInt(2); // 2 hoặc 3 viên của đối thủ
+            var numTarget = rndInt(2);  // 0 hoặc 1 viên màu ép
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+            for(var k=0; k<numTarget; k++) res.push(targetColor);
+          } else {
+            // Lật kèo tinh tế: chỉ ra 1 hoặc 2 viên (lâu lâu 3 viên) màu ép để tăng điểm từ từ
+            var numTarget = 1 + rndInt(2); 
+            if(rndInt(100) < 20) numTarget = 3; 
+            
+            var numOpp = rndInt(2); 
+            for(var k=0; k<numTarget; k++) res.push(targetColor);
+            for(var k=0; k<numOpp; k++) res.push(oppColor);
+          }
+          
+          // Điền các ô xúc xắc còn lại bằng màu ngẫu nhiên khác để giống thật
+          while(res.length < n){
+            var c = rndInt(6);
+            if(c !== targetColor && c !== oppColor) {
+              res.push(c);
+            } else if(rndInt(100) < 25) {
+              res.push(c);
+            }
+          }
+          // Trộn ngẫu nhiên vị trí các viên xúc xắc
+          res.sort(function(){ return Math.random() - 0.5; });
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        
         show(res);
         res.forEach(function(c){cnt[c]++;});
         if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
@@ -387,4 +417,3 @@ tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
 </body></html>
- 
