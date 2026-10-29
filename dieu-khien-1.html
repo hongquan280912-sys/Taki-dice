@@ -55,6 +55,9 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
  <div class="sw" id="sw2"></div>
  <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
  <div class="seg ten" id="tgSeg"></div>
+ 
+ <div class="lb" style="margin-top:10px; color:#ffe600; font-weight:bold;">⚙️ Chế độ ép tỉ lệ thắng (Gian lận):</div>
+ <div class="seg" id="rigSeg"></div>
 </div>
 
 <div id="pq" style="display:none">
@@ -86,7 +89,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room1"; // phải trùng với man-hinh-chinh.html
+var ROOM = "taki_room1";
 var cfgRef = db.ref(ROOM + "/config");
 
 var connEl=document.getElementById("conn");
@@ -97,7 +100,7 @@ db.ref(".info/connected").on("value",function(s){
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
-var mode="n",nd=4,tgt=5,sel1=4,sel2=2;
+var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigMode=0;
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
 var $=function(i){return document.getElementById(i);};
 
@@ -128,13 +131,12 @@ function swatches(id,start,cb){
 }
 function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
 
-/* ---------- EVENT 2 NGƯỜI ---------- */
 swatches("sw1",sel1,function(i){sel1=i;});
 swatches("sw2",sel2,function(i){sel2=i;});
 var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
 seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
+seg("rigSeg",["Bình thường", "Ép Người 1", "Ép Người 2"],0,function(i){rigMode=i;});
 
-/* ---------- EVENT NHIỀU NGƯỜI ---------- */
 function buildQRows(){
   var h="";
   qp.forEach(function(p,i){
@@ -161,7 +163,6 @@ tap($("qadd"),function(){
   buildQRows();
 });
 
-/* ---------- CHẾ ĐỘ ---------- */
 function setMode(m){
   mode=m;
   $("pn").style.display=m==="n"?"block":"none";
@@ -173,7 +174,6 @@ seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,f
 seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
 setMode("n");
 
-/* ---------- GỬI CẤU HÌNH ---------- */
 var configId=Date.now();
 tap($("send"),function(){
   if(mode==="e"&&sel1===sel2){banner("Hai người phải chọn màu khác nhau!");return;}
@@ -184,7 +184,8 @@ tap($("send"),function(){
   } else if(mode==="e"){
     cfg.ev={t:tgt,c1:sel1,c2:sel2,
       n1:$("n1").value.trim()||"Người 1",
-      n2:$("n2").value.trim()||"Người 2"};
+      n2:$("n2").value.trim()||"Người 2",
+      rig: rigMode};
   } else if(mode==="q"){
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
     cfg.q={players:players};
