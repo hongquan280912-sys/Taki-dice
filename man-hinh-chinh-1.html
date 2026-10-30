@@ -31,6 +31,9 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
 #waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
+#plegend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+#plegend .pl{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;padding:4px 10px;border-radius:20px}
+#plegend .pl i{width:12px;height:12px;border-radius:50%;display:inline-block}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
 .box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting{display:none!important}
@@ -51,6 +54,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="waiting">⏳ Đang tải cấu hình...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
+
+<div id="plegend" style="display:none"></div>
 
 <div id="dice"></div>
 <div id="ban"></div>
@@ -285,6 +290,20 @@ function playQ(res){
   }
 }
 
+function renderLegend(players){
+  if(!players || !players.length){
+    $("plegend").style.display="none";
+    $("plegend").innerHTML="";
+    return;
+  }
+  var h="";
+  players.forEach(function(p){
+    h+='<div class="pl"><i style="background:'+C[p.c]+'"></i>'+esc(p.n)+'</div>';
+  });
+  $("plegend").innerHTML=h;
+  $("plegend").style.display="flex";
+}
+
 cfgRef.on("value", function(snap){
   var cfg = snap.val();
   if(!cfg) return;
@@ -293,6 +312,7 @@ cfgRef.on("value", function(snap){
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; q.on = false;
+  renderLegend(null);
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -305,6 +325,8 @@ cfgRef.on("value", function(snap){
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p};
+  } else if(mode === "n" && cfg.players){
+    renderLegend(cfg.players);
   }
   show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
   banner("Đã nhận cấu hình mới!");
@@ -331,7 +353,7 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
 
-  say("Ba mươi sáu");
+  say("36");
 
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
@@ -389,7 +411,7 @@ function roll(){
   },25);
 }
 tap($("roll"),roll);
-tap($("tv"),function(){if(talking)return;stopSpeech();say("Ba mươi sáu");});
+tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
 tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
 show([0,1,2,3]);stats();applyView();
 </script>
