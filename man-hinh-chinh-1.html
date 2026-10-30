@@ -31,9 +31,6 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
 #waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
-#plegend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
-#plegend .pl{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;padding:4px 10px;border-radius:20px}
-#plegend .pl i{width:12px;height:12px;border-radius:50%;display:inline-block}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
 .box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting{display:none!important}
@@ -54,8 +51,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="waiting">⏳ Đang tải cấu hình...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
-
-<div id="plegend" style="display:none"></div>
 
 <div id="dice"></div>
 <div id="ban"></div>
@@ -97,7 +92,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room1";
+var ROOM = "taki_room6"; // Đã đổi sang phòng 6
 var cfgRef = db.ref(ROOM + "/config");
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
@@ -245,30 +240,21 @@ function scoreboard(msg){
   $("msg").textContent=msg||"";
 }
 
-/* ---------- TÍNH ĐIỂM THEO CHÊNH LỆCH SỐ VIÊN ----------
-   1-1 => hòa (chênh 0)
-   2-1 => người ra 2 viên +1 (chênh 1)
-   2-2 => hòa (chênh 0)
-   3-0 => người ra 3 viên +3 (chênh 3)
-*/
 function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length;
-  var b = res.filter(function(c){ return c === ev.c2; }).length;
-  var head = ev.n1 + " " + a + " " + CS[ev.c1] + " - " + ev.n2 + " " + b + " " + CS[ev.c2] + " → ";
-  var m;
-
+  var a = res.filter(function(c){ return c === ev.c1; }).length; 
+  var b = res.filter(function(c){ return c === ev.c2; }).length; 
+  var m = "";
+  
   if(a > b){
-    var diff = a - b;
-    ev.s1 += diff;
-    m = head + ev.n1 + " +" + diff;
+    ev.s1 += a;
+    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + a + ")";
   } else if(b > a){
-    var diff = b - a;
-    ev.s2 += diff;
-    m = head + ev.n2 + " +" + diff;
+    ev.s2 += b;
+    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + b + ")";
   } else {
-    m = head + "Hòa";
+    m = "Hòa (Không ai được cộng điểm)";
   }
-
+  
   var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
   if(win){
     ev.over = true;
@@ -281,27 +267,13 @@ function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
-  if(w.length){
-    w.forEach(function(p){p.w++;});
+  if(w.length){ 
+    w.forEach(function(p){p.w++;}); 
     say(w.map(function(p){return p.n;}).join(" và "));
-  } else {
-    q.house++;
+  } else { 
+    q.house++; 
     say("nhà cái thắng");
   }
-}
-
-function renderLegend(players){
-  if(!players || !players.length){
-    $("plegend").style.display="none";
-    $("plegend").innerHTML="";
-    return;
-  }
-  var h="";
-  players.forEach(function(p){
-    h+='<div class="pl"><i style="background:'+C[p.c]+'"></i>'+esc(p.n)+'</div>';
-  });
-  $("plegend").innerHTML=h;
-  $("plegend").style.display="flex";
 }
 
 cfgRef.on("value", function(snap){
@@ -312,7 +284,6 @@ cfgRef.on("value", function(snap){
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; q.on = false;
-  renderLegend(null);
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -325,8 +296,6 @@ cfgRef.on("value", function(snap){
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p};
-  } else if(mode === "n" && cfg.players){
-    renderLegend(cfg.players);
   }
   show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
   banner("Đã nhận cấu hình mới!");
@@ -349,12 +318,12 @@ function roll(){
     if(ev.over){banner("Đã có người thắng!");return;}
   }
   if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
-
+  
   busy=true;
   setTimeout(function(){busy=false;},1000);
-
+  
   say("36");
-
+  
   var md=mode,n=(md==="q")?1:nd,t=0;
   var h=setInterval(function(){
     try{
@@ -366,12 +335,12 @@ function roll(){
         if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
-
+          
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-
+          
           var isEarlyGame = (myScore < 3 && oppScore < 3);
-
+          
           if(isEarlyGame && rndInt(100) < 55){
             var numOpp = 1 + rndInt(2);
             var numTarget = rndInt(2);
@@ -380,11 +349,11 @@ function roll(){
           } else {
             var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0);
             var numOpp = rndInt(2);
-
+            
             for(var k=0; k<numTarget; k++) res.push(targetColor);
             for(var k=0; k<numOpp; k++) res.push(oppColor);
           }
-
+          
           while(res.length < n){
             var c = rndInt(6);
             if(c !== targetColor && c !== oppColor) {
@@ -397,7 +366,7 @@ function roll(){
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
-
+        
         show(res);
         res.forEach(function(c){cnt[c]++;});
         if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
