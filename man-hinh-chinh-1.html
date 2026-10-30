@@ -248,11 +248,13 @@ function playEvent(res){
   var m = "";
   
   if(a > b){
-    ev.s1 += a;
-    m = ev.n1 + " có " + a + " viên (" + ev.n1 + " +" + a + ")";
+    var diff = a - b;
+    ev.s1 += diff;
+    m = ev.n1 + " có " + a + " viên, " + ev.n2 + " có " + b + " viên (" + ev.n1 + " +" + diff + ")";
   } else if(b > a){
-    ev.s2 += b;
-    m = ev.n2 + " có " + b + " viên (" + ev.n2 + " +" + b + ")";
+    var diff = b - a;
+    ev.s2 += diff;
+    m = ev.n2 + " có " + b + " viên, " + ev.n1 + " có " + a + " viên (" + ev.n2 + " +" + diff + ")";
   } else {
     m = "Hòa (Không ai được cộng điểm)";
   }
@@ -271,11 +273,13 @@ function playNormalEvent(res){
   var m = "";
   
   if(a > b){
-    nEv.s1 += a;
-    m = nEv.n1 + " có " + a + " viên (" + nEv.n1 + " +" + a + ")";
+    var diff = a - b;
+    nEv.s1 += diff;
+    m = nEv.n1 + " có " + a + " viên, " + nEv.n2 + " có " + b + " viên (" + nEv.n1 + " +" + diff + ")";
   } else if(b > a){
-    nEv.s2 += b;
-    m = nEv.n2 + " có " + b + " viên (" + nEv.n2 + " +" + b + ")";
+    var diff = b - a;
+    nEv.s2 += diff;
+    m = nEv.n2 + " có " + b + " viên, " + nEv.n1 + " có " + a + " viên (" + nEv.n2 + " +" + diff + ")";
   } else {
     m = "Hòa (Không ai được cộng điểm)";
   }
