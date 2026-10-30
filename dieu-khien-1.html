@@ -44,9 +44,15 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <div id="pn" style="display:none">
  <div class="lb" style="margin-top:10px">Số xúc xắc</div>
  <div class="seg" id="ndSeg"></div>
- <div class="lb" style="margin-top:10px">Người chơi (tuỳ chọn)</div>
- <div id="nrows"></div>
- <button class="s" id="nadd">+ Thêm người</button>
+ <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường (Tuỳ chọn)</b></div>
+ <div class="lb">Người 1</div>
+ <input id="nn1" placeholder="Tên người 1">
+ <div class="sw" id="nsw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="nn2" placeholder="Tên người 2">
+ <div class="sw" id="nsw2"></div>
+ <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+ <div class="seg ten" id="ntgSeg"></div>
 </div>
 
 <div id="pe" style="display:none">
@@ -91,7 +97,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room6"; // Đồng bộ phòng 6
+var ROOM = "taki_room6";
 var cfgRef = db.ref(ROOM + "/config");
 
 var connEl=document.getElementById("conn");
@@ -103,8 +109,8 @@ db.ref(".info/connected").on("value",function(s){
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
+var nTgt=5, nSel1=0, nSel2=1; // Cấu hình mặc định cho bảng đếm Roll thường
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
-var np=[]; 
 var $=function(i){return document.getElementById(i);};
 
 function tap(el,fn){
@@ -133,6 +139,12 @@ function swatches(id,start,cb){
   });
 }
 function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
+
+/* ---------- ROLL THƯỜNG CÓ BẢNG ĐÉM ---------- */
+swatches("nsw1",nSel1,function(i){nSel1=i;});
+swatches("nsw2",nSel2,function(i){nSel2=i;});
+var ntl=[];for(var t=1;t<=10;t++)ntl.push("Chạm "+t);
+seg("ntgSeg",ntl,nTgt-1,function(i){nTgt=i+1;});
 
 /* ---------- EVENT 2 NGƯỜI & GIAN LẬN ---------- */
 swatches("sw1",sel1,function(i){sel1=i;});
@@ -168,33 +180,6 @@ tap($("qadd"),function(){
   buildQRows();
 });
 
-/* ---------- NGƯỜI CHƠI HIỂN THỊ (ROLL THƯỜNG) ---------- */
-function buildNRows(){
-  var h="";
-  np.forEach(function(p,i){
-    h+='<div class="qrow"><input data-i="'+i+'" class="nn" placeholder="Tên người '+(i+1)+'" value="'+(p.n||"")+'">'+
-       '<div class="sw" id="ns'+i+'"></div>'+
-       '<button class="qdel" data-i="'+i+'">✕</button>'+
-       '</div>';
-  });
-  $("nrows").innerHTML=h;
-  np.forEach(function(p,i){
-    swatches("ns"+i,p.c,function(c){np[i].c=c;});
-  });
-  document.querySelectorAll(".nn").forEach(function(inp){
-    inp.addEventListener("input",function(){np[+inp.dataset.i].n=inp.value;});
-  });
-  document.querySelectorAll("#nrows .qdel").forEach(function(b){
-    tap(b,function(){np.splice(+b.dataset.i,1);buildNRows();});
-  });
-}
-buildNRows();
-tap($("nadd"),function(){
-  if(np.length>=8){banner("Tối đa 8 người");return;}
-  np.push({n:"",c:np.length%6});
-  buildNRows();
-});
-
 /* ---------- CHẾ ĐỘ ---------- */
 function setMode(m){
   mode=m;
@@ -215,19 +200,20 @@ tap($("send"),function(){
   var cfg={mode:mode,configId:configId};
   if(mode==="n"){
     cfg.nd=nd;
-    var pls=np.filter(function(p){return p.n.trim();}).map(function(p){return {n:p.n.trim(),c:p.c};});
-    cfg.players=pls;
+    cfg.nEv={t:nTgt, c1:nSel1, c2:nSel2,
+      n1:$("nn1").value.trim()||"Người 1",
+      n2:$("nn2").value.trim()||"Người 2"};
   } else if(mode==="e"){
     cfg.ev={t:tgt, c1:sel1, c2:sel2,
       n1:$("n1").value.trim()||"Người 1",
       n2:$("n2").value.trim()||"Người 2",
-      rig: rigVal}; // Gửi thêm trạng thái gian lận sang màn hình chính
+      rig: rigVal};
   } else if(mode==="q"){
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
     cfg.q={players:players};
   }
   cfgRef.set(cfg);
-  banner("Đã gửi cấu hình và bật gian lận thành công!");
+  banner("Đã gửi cấu hình thành công!");
 });
 </script>
 </body></html>
