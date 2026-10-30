@@ -44,7 +44,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <div id="pn" style="display:none">
  <div class="lb" style="margin-top:10px">Số xúc xắc</div>
  <div class="seg" id="ndSeg"></div>
- <div class="lb" style="margin-top:10px">Người chơi (tuỳ chọn) — viên trúng màu ai thì tính cho người đó, ai nhiều nhất không bị hòa thì +chênh lệch (xúc xắc vẫn roll ngẫu nhiên công bằng)</div>
+ <div class="lb" style="margin-top:10px">Người chơi (tuỳ chọn)</div>
  <div id="nrows"></div>
  <button class="s" id="nadd">+ Thêm người</button>
 </div>
@@ -58,6 +58,8 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
  <div class="sw" id="sw2"></div>
  <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
  <div class="seg ten" id="tgSeg"></div>
+ <div class="lb" style="margin-top:10px">⚡ Chế độ gian lận (Ép thắng)</div>
+ <div class="seg" id="rigSeg"></div>
 </div>
 
 <div id="pq" style="display:none">
@@ -71,7 +73,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <button id="send">📤 Gửi cấu hình</button>
 <div id="ban"></div>
 
-<div class="n">Mở <b>man-hinh-chinh.html</b> trên điện thoại còn lại để xem xúc xắc và chơi — nó sẽ tự nhận cấu hình bạn gửi ở đây.</div>
+<div class="n">Mở <b>man-hinh-chinh.html</b> trên điện thoại còn lại để xem xúc xắc và chơi.</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -89,7 +91,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room1"; // phải trùng với man-hinh-chinh.html
+var ROOM = "taki_room6"; // Đồng bộ phòng 6
 var cfgRef = db.ref(ROOM + "/config");
 
 var connEl=document.getElementById("conn");
@@ -100,9 +102,9 @@ db.ref(".info/connected").on("value",function(s){
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
-var mode="n",nd=4,tgt=5,sel1=4,sel2=2;
+var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
-var np=[]; // người chơi hiển thị trong Roll thường (tuỳ chọn)
+var np=[]; 
 var $=function(i){return document.getElementById(i);};
 
 function tap(el,fn){
@@ -132,11 +134,12 @@ function swatches(id,start,cb){
 }
 function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
 
-/* ---------- EVENT 2 NGƯỜI ---------- */
+/* ---------- EVENT 2 NGƯỜI & GIAN LẬN ---------- */
 swatches("sw1",sel1,function(i){sel1=i;});
 swatches("sw2",sel2,function(i){sel2=i;});
 var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
 seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
+seg("rigSeg",["Công bằng", "Ép Người 1", "Ép Người 2"], 0, function(i){ rigVal = i; });
 
 /* ---------- EVENT NHIỀU NGƯỜI ---------- */
 function buildQRows(){
@@ -215,15 +218,16 @@ tap($("send"),function(){
     var pls=np.filter(function(p){return p.n.trim();}).map(function(p){return {n:p.n.trim(),c:p.c};});
     cfg.players=pls;
   } else if(mode==="e"){
-    cfg.ev={t:tgt,c1:sel1,c2:sel2,
+    cfg.ev={t:tgt, c1:sel1, c2:sel2,
       n1:$("n1").value.trim()||"Người 1",
-      n2:$("n2").value.trim()||"Người 2"};
+      n2:$("n2").value.trim()||"Người 2",
+      rig: rigVal}; // Gửi thêm trạng thái gian lận sang màn hình chính
   } else if(mode==="q"){
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
     cfg.q={players:players};
   }
   cfgRef.set(cfg);
-  banner("Đã gửi! Mở màn hình chính để chơi.");
+  banner("Đã gửi cấu hình và bật gian lận thành công!");
 });
 </script>
 </body></html>
