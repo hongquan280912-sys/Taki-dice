@@ -319,16 +319,26 @@ function playQ(res){
 
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) {
-    show([0,1,2,3]);
-    stats();
-    return;
+  if(!cfg) return;
+  
+  mode = cfg.mode || "n";
+  nd = (mode === "q") ? 1 : (cfg.nd || 4); // Cố định 1 xúc xắc nếu là Event nhiều người
+  
+  // Tự động ẩn bảng đặt tên 2 người nếu chuyển sang Event nhiều người
+  if(mode === "q") {
+    $("localPanel").style.display = "none";
+  } else {
+    $("localPanel").style.display = "block";
   }
+
+  // Cập nhật giá trị màu ép từ Firebase
+  if(cfg.q && cfg.q.nextColor !== undefined) {
+    q.nextColor = cfg.q.nextColor;
+  }
+
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
 
-  mode = cfg.mode || "n";
-  nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; nEv.on = false; q.on = false;
 
@@ -475,9 +485,10 @@ function roll(){
           }
           res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q") {
+          // XỬ LÝ ÉP MÀU TIẾP THEO Ở CHẾ ĐỘ EVENT NHIỀU NGƯỜI
           if(q.nextColor !== null && q.nextColor !== undefined) {
             res.push(q.nextColor);
-            // Xóa màu ép trên Firebase sau khi đã ra mắt để các lượt sau trở về ngẫu nhiên
+            // Xóa màu ép trên Firebase sau khi đã ra mắt để lượt sau về ngẫu nhiên
             fetch(DB_URL.replace("config.json", "config/q/nextColor.json"), {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -497,20 +508,4 @@ function roll(){
         rolls.unshift(res);if(rolls.length>20)rolls.pop();
         stats();
         busy=false;
-        if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && q.on)playQ(res);
-      }
-    }catch(err){
-      clearInterval(h);
-      busy=false;
-    }
-  },100);
-}
-
-tap($("roll"), roll);
-tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+ 
