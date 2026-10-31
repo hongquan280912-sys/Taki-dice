@@ -107,16 +107,6 @@ var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
-// HIỂN THỊ XÚC XẮC MẶC ĐỊNH NGAY LẬP TỨC KHI MỞ TRANG
-function show(res){
-  box.innerHTML="";
-  res.forEach(function(c){
-    var d=document.createElement("div");d.className="d";
-    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
-  });
-}
-show([0, 1, 2, 3]); // Hiện luôn 4 hột xúc xắc mặc định để không bị trống
-
 function tap(el,fn){
   var last=0;
   function h(e){
@@ -228,7 +218,14 @@ function stats(){
   rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
   $("hist").innerHTML=h;
 }
-
+function show(res){
+  box.innerHTML="";
+  if(!res || !res.length) res = [0,1,2,3];
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
 function esc(s){return (s||"").replace(/[&<>]/g,"");}
 
 $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
@@ -303,8 +300,33 @@ function playNormalEvent(res){
   scoreboard(m, true);
 }
 
+function playQ(res){
+  q.rounds++;
+  var col=res[0];
+  var w=q.p.filter(function(p){return p.c===col;});
+  var m="";
+  if(w.length){ 
+    w.forEach(function(p){p.w++;}); 
+    var names = w.map(function(p){return p.n;}).join(" và ");
+    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
+    say(names);
+  } else { 
+    q.house++; 
+    m = "Nhà cái thắng vòng này";
+    say("nhà cái thắng");
+  }
+  $("score").style.display="block";
+  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
+  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
+  $("msg").textContent = m;
+}
+
 function handleConfig(cfg){
-  if(!cfg) return;
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
@@ -476,17 +498,10 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
+        if(md==="q" && q.on)playQ(res);
       }
     }catch(err){
       clearInterval(h);
       busy=false;
     }
-  },100);
-}
-
-tap($("roll"), roll);
-tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+ 
