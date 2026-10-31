@@ -95,7 +95,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-// Bạn có thể đổi tên phòng tại khung nhập trên màn hình hoặc đổi mặc định ở đây:
 var currentRoom = "taki_room6";
 try {
   var urlParams = new URLSearchParams(window.location.search);
@@ -115,6 +114,7 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
+var qCfg={on:false, nextColor:null, players:[]};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -317,6 +317,21 @@ function playNormalEvent(res){
   scoreboard(m, true);
 }
 
+function playMultiEvent(res){
+  var rolledColor = res[0];
+  var matched = qCfg.players.filter(function(p){ return p.c === rolledColor; });
+  var m = "Ra màu " + CS[rolledColor];
+  if(matched.length > 0){
+    var names = matched.map(function(p){ return p.n || "Người chơi"; }).join(", ");
+    m += " — Trúng người: " + names;
+  } else {
+    m += " — Không ai trúng màu này";
+  }
+  $("score").style.display = "block";
+  $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
+  $("msg").textContent = m;
+}
+
 var lastConfigId = 0;
 function handleConfig(cfg){
   if(!cfg) {
@@ -330,7 +345,7 @@ function handleConfig(cfg){
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
-  ev.on = false; nEv.on = false;
+  ev.on = false; nEv.on = false; qCfg.on = false;
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -351,6 +366,15 @@ function handleConfig(cfg){
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
+  } else if(mode === "q" && cfg.q){
+    qCfg = {
+      on: true,
+      nextColor: (cfg.q.nextColor !== undefined ? cfg.q.nextColor : null),
+      players: cfg.q.players || []
+    };
+    $("score").style.display = "block";
+    $("sc").textContent = "Chế độ Event nhiều người";
+    $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
   show([0,1,2,3,4,5].slice(0, nd));
 }
@@ -471,6 +495,8 @@ function roll(){
             }
           }
           res.sort(function(){ return Math.random() - 0.5; });
+        } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
+          res.push(qCfg.nextColor);
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
@@ -483,6 +509,7 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
+        if(md==="q" && qCfg.on)playMultiEvent(res);
       }
     }catch(err){
       clearInterval(h);
