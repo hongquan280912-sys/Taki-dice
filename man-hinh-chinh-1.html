@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Zalo meo meo - Taki Dice</title>
+<title>Zalo Cuto - Taki Dice</title>
 <style>
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
@@ -30,7 +30,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
-#waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
+#waiting{display:none!important}
 input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
 .sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
@@ -49,7 +49,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
   <button id="mn">▁ Thu nhỏ</button>
  </div>
 </div>
-<h2>Zalo meo meo</h2>
+<h2>Zalo Cuto</h2>
 
 <!-- Mục 1: Event 2 người / Roll thường -->
 <div class="n" id="localPanel">
@@ -67,8 +67,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div>
  <div id="qListContent" style="margin-top:6px"></div>
 </div>
-
-<div id="waiting">⏳ Đang kết nối dữ liệu...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -114,12 +112,6 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 var ROOM = "taki_room6";
 var cfgRef = db.ref(ROOM + "/config");
-
-// Tự động ẩn bảng chờ sau 1 giây phòng trường hợp mạng cục bộ bị chặn
-setTimeout(function(){
-  var w = document.getElementById("waiting");
-  if(w) w.style.display = "none";
-}, 1000);
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -346,7 +338,6 @@ function playQ(res){
 }
 
 cfgRef.on("value", function(snap){
-  $("waiting").style.display="none";
   var cfg = snap.val();
   if(!cfg) return;
   mode = cfg.mode || "n";
@@ -497,4 +488,13 @@ function roll(){
         }
         
         show(res);
-        res.forEach(functi
+        res.forEach(function(c){cnt[c]++;});
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(rolls.length>20)rolls.pop();
+        stats();
+        busy=false;
+        if(md==="e")playEvent(res);
+        if(md==="n" && nEv.on)playNormalEvent(res);
+        if(md==="q")playQ(res);
+      }
+    }catch(err){clearInte
