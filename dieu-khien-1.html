@@ -209,7 +209,7 @@ tap($("send"),function(){
       n2:$("n2").value.trim()||"Người 2",
       rig: rigVal};
   } else if(mode==="q"){
-    cfg.nd = 1; // Event nhiều người chỉ có 1 xúc xắc
+    cfg.nd = 1; // Cố định 1 xúc xắc cho chế độ Event nhiều người
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
     cfg.q={players:players};
   }
