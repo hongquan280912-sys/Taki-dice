@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Zalo meo meo - Taki Dice</title>
 <style>
-*{-webkit-tap-highlight-color:transparent}
+*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
 .box{width:100%;max-width:420px;background:rgba(255,255,255,.25);border:4px solid #fff;border-radius:22px;padding:14px;text-align:center}
 h2{color:#fff;margin:0 0 10px;font-size:30px;text-shadow:0 2px 4px #0a3d91}
@@ -17,7 +17,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #tb .r{display:flex;gap:6px}
 #tb button{width:auto;min-height:38px;padding:4px 10px;font-size:14px;background:rgba(0,0,0,.35);border:2px solid #fff;border-radius:8px}
 .lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
-.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px}
+.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
 .row{display:flex;justify-content:space-between;gap:4px;margin-top:6px}
 .row div{flex:1;padding:6px 0;border-radius:8px;color:#fff;font-weight:bold;font-size:15px;border:2px solid #fff}
 #hist{max-height:200px;overflow-y:auto;margin-top:8px;text-align:left}
@@ -31,6 +31,12 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
 #waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
+input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.seg button{width:auto;flex:1;min-width:0;min-height:40px;padding:6px 4px;margin:0;font-size:13px;background:rgba(255,255,255,.35);border:2px solid #fff;border-radius:8px}
+.seg button.on{background:#2a7a4b}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
 .box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting{display:none!important}
@@ -47,6 +53,32 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  </div>
 </div>
 <h2>Zalo meo meo</h2>
+
+<!-- BẢNG ĐIỀU KHIỂN / CẤU HÌNH TÍCH HỢP TRỰC TIẾP TRÊN MÀN HÌNH CHÍNH -->
+<div class="n" id="localPanel">
+ <div class="lb"><b>Chế độ chơi</b></div>
+ <div class="seg" id="modeSeg"></div>
+
+ <div id="pn" style="display:none">
+  <div class="lb" style="margin-top:6px">Số xúc xắc</div>
+  <div class="seg" id="ndSeg"></div>
+ </div>
+
+ <div id="pe" style="display:none">
+  <div class="lb">Người 1</div>
+  <input id="n1" placeholder="Tên người 1" value="Người 1">
+  <div class="sw" id="sw1"></div>
+  <div class="lb">Người 2</div>
+  <input id="n2" placeholder="Tên người 2" value="Người 2">
+  <div class="sw" id="sw2"></div>
+  <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+  <div class="seg" id="tgSeg"></div>
+  <div class="lb" style="margin-top:6px">⚡ Chế độ gian lận (Ép thắng)</div>
+  <div class="seg" id="rigSeg"></div>
+ </div>
+
+ <button class="s" id="applyLocal" style="margin-top:8px">💾 Lưu & Áp dụng cấu hình</button>
+</div>
 
 <div id="waiting">⏳ Đang tải cấu hình...</div>
 
@@ -337,6 +369,57 @@ cfgRef.on("value", function(snap){
   banner("Đã nhận cấu hình mới!");
 });
 
+/* XỬ LÝ GIAO DIỆN TÍCH HỢP TRỰC TIẾP TRÊN MÀN HÌNH CHÍNH */
+var localMode="n", localNd=4, localTgt=5, localSel1=4, localSel2=2, localRig=0;
+
+function seg(id,labels,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  labels.forEach(function(l,i){
+    var b=document.createElement("button");b.textContent=l;
+    if(i===start)b.className="on";
+    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+function swatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+
+seg("modeSeg",["Roll thường","Event 2 người"],0,function(i){
+  localMode = i===0 ? "n" : "e";
+  $("pn").style.display = i===0 ? "block" : "none";
+  $("pe").style.display = i===1 ? "block" : "none";
+});
+seg("ndSeg",["1","2","3","4","5","6"],3,function(i){localNd=i+1;});
+swatches("sw1",localSel1,function(i){localSel1=i;});
+swatches("sw2",localSel2,function(i){localSel2=i;});
+var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
+seg("tgSeg",tl,localTgt-1,function(i){localTgt=i+1;});
+seg("rigSeg",["Công bằng","Ép Người 1","Ép Người 2"],0,function(i){localRig=i;});
+
+$("pn").style.display="block";
+$("pe").style.display="none";
+
+tap($("applyLocal"),function(){
+  if(localMode==="e" && localSel1===localSel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  var cfg={mode:localMode, configId:Date.now()};
+  if(localMode==="n"){
+    cfg.nd=localNd;
+    cfg.nEv={t:localTgt, c1:localSel1, c2:localSel2, n1:$("n1").value.trim()||"Người 1", n2:$("n2").value.trim()||"Người 2"};
+  } else {
+    cfg.ev={t:localTgt, c1:localSel1, c2:localSel2, n1:$("n1").value.trim()||"Người 1", n2:$("n2").value.trim()||"Người 2", rig:localRig};
+  }
+  cfgRef.set(cfg);
+  banner("Đã lưu và áp dụng cấu hình trực tiếp!");
+});
+
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
   var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
@@ -414,12 +497,4 @@ function roll(){
         if(md==="n" && nEv.on)playNormalEvent(res);
         if(md==="q")playQ(res);
       }
-    }catch(err){clearInterval(h);busy=false;}
-  },25);
-}
-tap($("roll"),roll);
-tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
-tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
-show([0,1,2,3]);stats();applyView();
-</script>
-</body></html>
+    }catch(err){clearInterval(h);b
