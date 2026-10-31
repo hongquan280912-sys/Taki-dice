@@ -65,9 +65,11 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 </div>
 
 <div id="pq" style="display:none">
- <div class="lb" style="margin-top:6px">Người chơi (chỉ lắc 1 xúc xắc, cho phép trùng màu)</div>
+ <div class="lb" style="margin-top:6px">Người chơi (Tối đa 4 người, cho phép trùng màu)</div>
  <div id="qrows"></div>
  <button class="s" id="qadd">+ Thêm người</button>
+ <div class="lb" style="margin-top:12px">🎯 Chọn màu ra tiếp theo (Ép màu tiếp theo)</div>
+ <div class="sw" id="nextSw"></div>
 </div>
 
 </div>
@@ -107,6 +109,7 @@ var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
 var nTgt=5, nSel1=0, nSel2=1; 
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
+var nextColorSel=0;
 var $=function(i){return document.getElementById(i);};
 
 function tap(el,fn){
@@ -147,12 +150,14 @@ var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
 seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
 seg("rigSeg",["Công bằng", "Ép Màu 1", "Ép Màu 2"], 0, function(i){ rigVal = i; });
 
+swatches("nextSw",nextColorSel,function(i){nextColorSel=i;});
+
 function buildQRows(){
   var h="";
   qp.forEach(function(p,i){
     h+='<div class="qrow"><input data-i="'+i+'" class="qn" placeholder="Tên người '+(i+1)+'" value="'+(p.n||"")+'">'+
        '<div class="sw" id="qs'+i+'"></div>'+
-       (qp.length>2?'<button class="qdel" data-i="'+i+'">✕</button>':'')+
+       (qp.length>1?'<button class="qdel" data-i="'+i+'">✕</button>':'')+
        '</div>';
   });
   $("qrows").innerHTML=h;
@@ -168,7 +173,7 @@ function buildQRows(){
 }
 buildQRows();
 tap($("qadd"),function(){
-  if(qp.length>=8){banner("Tối đa 8 người");return;}
+  if(qp.length>=4){banner("Tối đa 4 người chơi");return;}
   qp.push({n:"",c:qp.length%6});
   buildQRows();
 });
@@ -196,7 +201,7 @@ tap($("send"),function(){
     cfg.ev={t:tgt, c1:sel1, c2:sel2, n1:"Người 1", n2:"Người 2", rig: rigVal};
   } else if(mode==="q"){
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
-    cfg.q={players:players};
+    cfg.q={players:players, nextColor:nextColorSel};
   }
   cfgRef.set(cfg);
   banner("Đã gửi cấu hình thành công!");
