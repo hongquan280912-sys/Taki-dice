@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Zalo meo meo - Taki Dice</title>
+<title>Zalo Cuto - Taki Dice</title>
 <style>
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
@@ -30,13 +30,12 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
-#waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
 input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
 .sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting,.box.mini #localPanel{display:none!important}
+.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel,.box.mini #qDisplayPanel{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
 .box.mini #score{font-size:16px;margin-top:6px}
@@ -49,11 +48,11 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
   <button id="mn">▁ Thu nhỏ</button>
  </div>
 </div>
-<h2>Zalo meo meo</h2>
+<h2>Zalo Cuto</h2>
 
-<!-- Ô nhập tên để trống hoàn toàn -->
+<!-- Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
+ <div class="lb"><b>Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
@@ -62,7 +61,11 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <div class="sw" id="sw2"></div>
 </div>
 
-<div id="waiting">⏳ Đang tải cấu hình...</div>
+<!-- Mục 2: Danh sách người chơi (Event nhiều người) -->
+<div class="n" id="qDisplayPanel">
+ <div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div>
+ <div id="qListContent" style="margin-top:6px">Chưa có người chơi nào được cấu hình từ bảng điều khiển.</div>
+</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -91,23 +94,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </details>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-var firebaseConfig = {
-  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
-  authDomain: "taki-4b68b.firebaseapp.com",
-  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
-  projectId: "taki-4b68b",
-  storageBucket: "taki-4b68b.firebasestorage.app",
-  messagingSenderId: "943690027603",
-  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
-  measurementId: "G-CE9VKNFFX2"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
-var ROOM = "taki_room6";
-var cfgRef = db.ref(ROOM + "/config");
+var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -115,7 +103,7 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
-var q={on:false,rounds:0,house:0,p:[]};
+var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -316,19 +304,29 @@ function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
+  var m="";
   if(w.length){ 
     w.forEach(function(p){p.w++;}); 
-    say(w.map(function(p){return p.n;}).join(" và "));
+    var names = w.map(function(p){return p.n;}).join(" và ");
+    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
+    say(names);
   } else { 
     q.house++; 
+    m = "Nhà cái thắng vòng này";
     say("nhà cái thắng");
   }
+  $("score").style.display="block";
+  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
+  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
+  $("msg").textContent = m;
 }
 
-cfgRef.on("value", function(snap){
-  var cfg = snap.val();
-  if(!cfg) return;
-  $("waiting").style.display="none";
+function handleConfig(cfg){
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
@@ -355,11 +353,34 @@ cfgRef.on("value", function(snap){
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
-    q = {on: true, rounds: 0, house: 0, p: p};
+    q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
+    
+    var qHtml = '';
+    cfg.q.players.forEach(function(pl, idx){
+      qHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:4px;background:rgba(0,0,0,0.2);border-radius:6px;">' +
+               '<span style="font-weight:bold;flex:1">' + esc(pl.n) + '</span>' +
+               '<div class="m" style="background:' + C[pl.c] + '"><i></i></div>' +
+               '</div>';
+    });
+    $("qListContent").innerHTML = qHtml;
+    
+    $("score").style.display="block";
+    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
+    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
+    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
-  show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
-  banner("Đã nhận cấu hình mới!");
-});
+  show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
+}
+
+// Polling qua REST API để vượt qua mọi chặn WebSocket của trình duyệt điện thoại
+function pollConfig(){
+  fetch(DB_URL)
+    .then(function(res){ return res.json(); })
+    .then(function(cfg){ handleConfig(cfg); })
+    .catch(function(err){});
+}
+setInterval(pollConfig, 1000);
+pollConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
@@ -389,7 +410,11 @@ function syncLocalConfig(){
       rig:0
     }
   };
-  cfgRef.set(cfg);
+  fetch(DB_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cfg)
+  }).catch(function(e){});
 }
 
 $("n1").addEventListener("input",syncLocalConfig);
@@ -423,8 +448,11 @@ function roll(){
   var h=setInterval(function(){
     try{
       t++;
-      if(t<4){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
-      else{
+      if(t<4){
+        var f=[];
+        for(var i=0;i<n;i++) f.push(rndInt(6));
+        show(f);
+      } else {
         clearInterval(h);
         var res=[];
         if(md==="e" && ev.rig && ev.rig > 0){
@@ -434,7 +462,6 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          // Thuật toán ép thắng tinh vi: Giữ điểm người thua sát nút (tầm 3 hoặc 4 khi người thắng đạt 5) tránh bị nghi ngờ
           var numTarget, numOpp;
           if (oppScore < myScore - 1) {
             numTarget = rndInt(2);
@@ -454,6 +481,12 @@ function roll(){
             }
           }
           res.sort(function(){ return Math.random() - 0.5; });
+        } else if(md==="q") {
+          if(q.nextColor !== null && q.nextColor !== undefined) {
+            res.push(q.nextColor);
+          } else {
+            res.push(rndInt(6));
+          }
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
@@ -466,14 +499,4 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q")playQ(res);
-      }
-    }catch(err){clearInterval(h);busy=false;}
-  },25);
-}
-tap($("roll"),roll);
-tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
-tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
-show([0,1,2,3]);stats();applyView();
-</script>
-</body></html>
+        if(md==
