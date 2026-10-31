@@ -231,7 +231,6 @@ $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
 tap($("t1k"),function(){
   var c=[0,0,0,0,0,0],i;
   for(i=0;i<4000;i++)c[rndInt(6)]++;
-  var mx=Math.max.apply(null,c),mn=Math.min.apply(null,c);
   $("t1r").style.display="block";
   $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
 });
@@ -300,27 +299,6 @@ function playNormalEvent(res){
   scoreboard(m, true);
 }
 
-function playQ(res){
-  q.rounds++;
-  var col=res[0];
-  var w=q.p.filter(function(p){return p.c===col;});
-  var m="";
-  if(w.length){ 
-    w.forEach(function(p){p.w++;}); 
-    var names = w.map(function(p){return p.n;}).join(" và ");
-    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
-    say(names);
-  } else { 
-    q.house++; 
-    m = "Nhà cái thắng vòng này";
-    say("nhà cái thắng");
-  }
-  $("score").style.display="block";
-  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
-  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
-  $("msg").textContent = m;
-}
-
 function handleConfig(cfg){
   if(!cfg) {
     show([0,1,2,3]);
@@ -372,7 +350,6 @@ function handleConfig(cfg){
   show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
 }
 
-// Polling qua REST API để vượt qua mọi chặn WebSocket của trình duyệt điện thoại
 function pollConfig(){
   fetch(DB_URL)
     .then(function(res){ return res.json(); })
@@ -499,4 +476,17 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==
+      }
+    }catch(err){
+      clearInterval(h);
+      busy=false;
+    }
+  },100);
+}
+
+tap($("roll"), roll);
+tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+</html>
