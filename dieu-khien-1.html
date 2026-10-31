@@ -44,7 +44,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <div id="pn" style="display:none">
  <div class="lb" style="margin-top:10px">Số xúc xắc</div>
  <div class="seg" id="ndSeg"></div>
- <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường (Tuỳ chọn)</b></div>
+ <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường</b></div>
  <div class="lb">Người 1</div>
  <input id="nn1" placeholder="Tên người 1">
  <div class="sw" id="nsw1"></div>
@@ -109,7 +109,7 @@ db.ref(".info/connected").on("value",function(s){
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1; // Cấu hình mặc định cho bảng đếm Roll thường
+var nTgt=5, nSel1=0, nSel2=1;
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
 var $=function(i){return document.getElementById(i);};
 
@@ -140,20 +140,17 @@ function swatches(id,start,cb){
 }
 function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
 
-/* ---------- ROLL THƯỜNG CÓ BẢNG ĐÉM ---------- */
 swatches("nsw1",nSel1,function(i){nSel1=i;});
 swatches("nsw2",nSel2,function(i){nSel2=i;});
 var ntl=[];for(var t=1;t<=10;t++)ntl.push("Chạm "+t);
 seg("ntgSeg",ntl,nTgt-1,function(i){nTgt=i+1;});
 
-/* ---------- EVENT 2 NGƯỜI & GIAN LẬN ---------- */
 swatches("sw1",sel1,function(i){sel1=i;});
 swatches("sw2",sel2,function(i){sel2=i;});
 var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
 seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
 seg("rigSeg",["Công bằng", "Ép Người 1", "Ép Người 2"], 0, function(i){ rigVal = i; });
 
-/* ---------- EVENT NHIỀU NGƯỜI ---------- */
 function buildQRows(){
   var h="";
   qp.forEach(function(p,i){
@@ -180,7 +177,6 @@ tap($("qadd"),function(){
   buildQRows();
 });
 
-/* ---------- CHẾ ĐỘ ---------- */
 function setMode(m){
   mode=m;
   $("pn").style.display=m==="n"?"block":"none";
@@ -192,7 +188,6 @@ seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,f
 seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
 setMode("n");
 
-/* ---------- GỬI CẤU HÌNH ---------- */
 var configId=Date.now();
 tap($("send"),function(){
   if(mode==="e"&&sel1===sel2){banner("Hai người phải chọn màu khác nhau!");return;}
