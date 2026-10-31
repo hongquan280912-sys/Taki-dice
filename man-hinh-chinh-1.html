@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Zalo Cuto - Phòng 1</title>
+<title>Zalo Cuto - Taki Dice</title>
 <style>
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
@@ -48,8 +48,9 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
   <button id="mn">▁ Thu nhỏ</button>
  </div>
 </div>
-<h2>Zalo Cuto (Phòng 1)</h2>
+<h2>Zalo Cuto</h2>
 
+<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Người 1</div>
@@ -88,7 +89,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room_phong1/config.json"; // PHÒNG 1
+var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json"; 
+// Mẹo chống xung đột: Nếu bạn đưa bạn bè dùng chung link riêng, hãy đổi 'taki_room6' ở trên thành tên phòng khác (ví dụ: 'taki_room_ban_A')
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -319,15 +321,10 @@ function playQ(res){
 var lastConfigId = 0;
 function handleConfig(cfg){
   if(!cfg) return;
-  
   mode = cfg.mode || "n";
-  nd = (mode === "q") ? 1 : (cfg.nd || 4);
-  
-  if(mode === "q") {
-    $("localPanel").style.display = "none";
-  } else {
-    $("localPanel").style.display = "block";
-  }
+  nd = cfg.nd || 4;
+  $("score").style.display = "none";
+  ev.on = false; nEv.on = false; q.on = false;
 
   if(cfg.q && cfg.q.nextColor !== undefined) {
     q.nextColor = cfg.q.nextColor;
@@ -335,9 +332,6 @@ function handleConfig(cfg){
 
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
-
-  $("score").style.display = "none";
-  ev.on = false; nEv.on = false; q.on = false;
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -349,7 +343,6 @@ function handleConfig(cfg){
     if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
-    show([0,1,2,3,4,5].slice(0, nd));
   } else if(mode === "n" && cfg.nEv){
     nEv = {
       on: true, over: false, s1: 0, s2: 0,
@@ -359,7 +352,6 @@ function handleConfig(cfg){
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
-    show([0,1,2,3,4,5].slice(0, nd));
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
@@ -368,8 +360,8 @@ function handleConfig(cfg){
     var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
     $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
     $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
-    show([q.nextColor !== null ? q.nextColor : 0]);
   }
+  show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
 }
 
 function pollConfig(){
@@ -437,7 +429,7 @@ function roll(){
     if(!ev.on){banner("Chưa có cấu hình!");return;}
     if(ev.over){banner("Đã có người thắng!");return;}
   }
-  if(mode==="q" && !q.on){banner("Chưa có cấu hình!");return;}
+  if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
@@ -516,4 +508,4 @@ function roll(){
 
 tap($("roll"), roll);
 tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];
