@@ -51,14 +51,14 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<!-- Phần đặt tên và chọn màu trực tiếp trên màn hình chính -->
+<!-- Ô nhập tên để trống hoàn toàn -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
  <div class="lb">Người 1</div>
- <input id="n1" placeholder="Tên người 1" value="Người 1">
+ <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
  <div class="lb">Người 2</div>
- <input id="n2" placeholder="Tên người 2" value="Người 2">
+ <input id="n2" placeholder="Nhập tên người 2" value="">
  <div class="sw" id="sw2"></div>
 </div>
 
@@ -343,8 +343,6 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    if(cfg.ev.n1)$("n1").value=cfg.ev.n1;
-    if(cfg.ev.n2)$("n2").value=cfg.ev.n2;
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
   } else if(mode === "n" && cfg.nEv){
     nEv = {
@@ -354,8 +352,6 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    if(cfg.nEv.n1)$("n1").value=cfg.nEv.n1;
-    if(cfg.nEv.n2)$("n2").value=cfg.nEv.n2;
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
@@ -438,26 +434,22 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          var isEarlyGame = (myScore < 3 && oppScore < 3);
-          
-          if(isEarlyGame && rndInt(100) < 55){
-            var numOpp = 1 + rndInt(2);
-            var numTarget = rndInt(2);
-            for(var k=0; k<numOpp; k++) res.push(oppColor);
-            for(var k=0; k<numTarget; k++) res.push(targetColor);
+          // Thuật toán ép thắng tinh vi: Giữ điểm người thua sát nút (tầm 3 hoặc 4 khi người thắng đạt 5) tránh bị nghi ngờ
+          var numTarget, numOpp;
+          if (oppScore < myScore - 1) {
+            numTarget = rndInt(2);
+            numOpp = 1 + rndInt(2);
           } else {
-            var numTarget = 1 + (rndInt(100) < 50 ? 1 : 0);
-            var numOpp = rndInt(2);
-            
-            for(var k=0; k<numTarget; k++) res.push(targetColor);
-            for(var k=0; k<numOpp; k++) res.push(oppColor);
+            numTarget = 2;
+            numOpp = 1;
           }
+          
+          for(var k=0; k<numTarget; k++) res.push(targetColor);
+          for(var k=0; k<numOpp; k++) res.push(oppColor);
           
           while(res.length < n){
             var c = rndInt(6);
             if(c !== targetColor && c !== oppColor) {
-              res.push(c);
-            } else if(rndInt(100) < 15) {
               res.push(c);
             }
           }
