@@ -89,15 +89,14 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-// Bạn có thể đổi tên phòng (ví dụ:taki_room_cua_ban) tại đây để tránh xung đột với người khác:
 var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
-var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
-var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
+var ev={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2",rig:0};
+var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2"};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -343,14 +342,20 @@ function pollConfig(){
 setInterval(pollConfig, 1000);
 pollConfig();
 
-var localSel1=4, localSel2=2;
+// Đặt mặc định 2 người 2 màu khác nhau (0: Đỏ, 4: Xanh dương) để tránh xung đột luôn hòa
+var localSel1=0, localSel2=4;
 function swatches(id,start,cb){
   var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
     b.textContent=(i===start)?"✓":"";
-    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);syncLocalConfig();});
+    tap(b,function(){
+      bs.forEach(function(x){x.textContent="";});
+      b.textContent="✓";
+      cb(i);
+      syncLocalConfig();
+    });
     el.appendChild(b);bs.push(b);
   });
 }
