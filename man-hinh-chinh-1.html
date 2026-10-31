@@ -35,7 +35,7 @@ input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:b
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel,.box.mini #qDisplayPanel{display:none!important}
+.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
 .box.mini #score{font-size:16px;margin-top:6px}
@@ -50,21 +50,15 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo Cuto</h2>
 
-<!-- Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người) -->
+<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
+ <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
  <div class="lb">Người 2</div>
  <input id="n2" placeholder="Nhập tên người 2" value="">
  <div class="sw" id="sw2"></div>
-</div>
-
-<!-- Mục 2: Danh sách người chơi (Event nhiều người) -->
-<div class="n" id="qDisplayPanel">
- <div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div>
- <div id="qListContent" style="margin-top:6px">Chưa có người chơi nào được cấu hình từ bảng điều khiển.</div>
 </div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
@@ -103,9 +97,18 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
-var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
+
+function show(res){
+  box.innerHTML="";
+  if(!res || !res.length) res = [0,1,2,3];
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
+show([0,1,2,3]);
 
 function tap(el,fn){
   var last=0;
@@ -218,14 +221,6 @@ function stats(){
   rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
   $("hist").innerHTML=h;
 }
-function show(res){
-  box.innerHTML="";
-  if(!res || !res.length) res = [0,1,2,3];
-  res.forEach(function(c){
-    var d=document.createElement("div");d.className="d";
-    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
-  });
-}
 function esc(s){return (s||"").replace(/[&<>]/g,"");}
 
 $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
@@ -300,37 +295,20 @@ function playNormalEvent(res){
   scoreboard(m, true);
 }
 
-function playQ(res){
-  q.rounds++;
-  var col=res[0];
-  var w=q.p.filter(function(p){return p.c===col;});
-  var m="";
-  if(w.length){ 
-    w.forEach(function(p){p.w++;}); 
-    var names = w.map(function(p){return p.n;}).join(" và ");
-    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
-    say(names);
-  } else { 
-    q.house++; 
-    m = "Nhà cái thắng vòng này";
-    say("nhà cái thắng");
-  }
-  $("score").style.display="block";
-  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
-  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
-  $("msg").textContent = m;
-}
-
+var lastConfigId = 0;
 function handleConfig(cfg){
   if(!cfg) {
     show([0,1,2,3]);
     stats();
     return;
   }
+  if(cfg.configId && cfg.configId === lastConfigId) return;
+  lastConfigId = cfg.configId || 0;
+
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
-  ev.on = false; q.on = false; nEv.on = false;
+  ev.on = false; nEv.on = false;
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -351,25 +329,8 @@ function handleConfig(cfg){
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
-  } else if(mode === "q" && cfg.q && cfg.q.players){
-    var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
-    q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
-    
-    var qHtml = '';
-    cfg.q.players.forEach(function(pl, idx){
-      qHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:4px;background:rgba(0,0,0,0.2);border-radius:6px;">' +
-               '<span style="font-weight:bold;flex:1">' + esc(pl.n) + '</span>' +
-               '<div class="m" style="background:' + C[pl.c] + '"><i></i></div>' +
-               '</div>';
-    });
-    $("qListContent").innerHTML = qHtml;
-    
-    $("score").style.display="block";
-    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
-    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
-    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
-  show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
+  show([0,1,2,3,4,5].slice(0, nd));
 }
 
 function pollConfig(){
@@ -409,6 +370,7 @@ function syncLocalConfig(){
       rig:0
     }
   };
+  lastConfigId = cfg.configId;
   fetch(DB_URL, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -436,14 +398,13 @@ function roll(){
     if(!ev.on){banner("Chưa có cấu hình!");return;}
     if(ev.over){banner("Đã có người thắng!");return;}
   }
-  if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
   say("36");
   
-  var md=mode,n=(md==="q")?1:nd,t=0;
+  var md=mode,n=nd,t=0;
   var h=setInterval(function(){
     try{
       t++;
@@ -480,12 +441,6 @@ function roll(){
             }
           }
           res.sort(function(){ return Math.random() - 0.5; });
-        } else if(md==="q") {
-          if(q.nextColor !== null && q.nextColor !== undefined) {
-            res.push(q.nextColor);
-          } else {
-            res.push(rndInt(6));
-          }
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
@@ -498,10 +453,17 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && q.on)playQ(res);
       }
     }catch(err){
       clearInterval(h);
       busy=false;
     }
- 
+  },100);
+}
+
+tap($("roll"), roll);
+tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+</html>
