@@ -1,511 +1,247 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Zalo Cuto - Taki Dice</title>
+<title>Taki Dice - Điều khiển</title>
 <style>
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
 body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
 .box{width:100%;max-width:420px;background:rgba(255,255,255,.25);border:4px solid #fff;border-radius:22px;padding:14px;text-align:center}
-h2{color:#fff;margin:0 0 10px;font-size:30px;text-shadow:0 2px 4px #0a3d91}
-#dice{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:14px 0;min-height:70px}
-.d{width:60px;height:60px;border:5px solid #fff;border-radius:14px;box-shadow:0 0 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
-.d i,.m i{width:12px;height:12px;border-radius:50%;background:#fff}
-button{width:100%;min-height:52px;padding:14px;font-size:22px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-button:active{filter:brightness(.8)}
-button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2a7a4b}
-#tb{display:flex;gap:6px;justify-content:flex-end;margin-bottom:6px;align-items:center}
-#tb .r{display:flex;gap:6px}
-#tb button{width:auto;min-height:38px;padding:4px 10px;font-size:14px;background:rgba(0,0,0,.35);border:2px solid #fff;border-radius:8px}
-.lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
-.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
-.row{display:flex;justify-content:space-between;gap:4px;margin-top:6px}
-.row div{flex:1;padding:6px 0;border-radius:8px;color:#fff;font-weight:bold;font-size:15px;border:2px solid #fff}
-#hist{max-height:200px;overflow-y:auto;margin-top:8px;text-align:left}
-.h{display:flex;align-items:center;gap:5px;padding:4px 2px;border-bottom:1px dashed #999}
-.h span{width:24px;font-weight:bold}
-.m{width:22px;height:22px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center}
-.m i{width:5px;height:5px}
-#rs{margin-top:8px;background:none;border:none;color:#fff;font-size:14px;text-decoration:underline;padding:8px;width:auto;min-height:40px}
-#ban{min-height:34px;margin-top:10px;font-size:22px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
-#vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
-#score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
-#msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
+h2{color:#fff;margin:0 0 6px;font-size:26px;text-shadow:0 2px 4px #0a3d91}
+.sub{color:#fff;font-size:13px;margin-bottom:12px;opacity:.9}
 input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
+button{width:100%;min-height:52px;padding:14px;font-size:20px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button:active{filter:brightness(.8)}
+button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#2a7a4b}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.seg button{width:auto;flex:1;min-width:0;min-height:44px;padding:8px 4px;margin:0;font-size:14px;background:rgba(255,255,255,.35);border:2px solid #fff;border-radius:10px}
+.seg button.on{background:#2a7a4b}
+.seg.ten button{flex:0 0 calc(20% - 5px)}
 .sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
-details{margin-top:12px;color:#fff;text-align:left}
-summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel{display:none!important}
-.box.mini h2{font-size:20px;margin-bottom:4px}
-.box.mini #dice{margin:8px 0}
-.box.mini #score{font-size:16px;margin-top:6px}
+.lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
+.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
+#ban{min-height:30px;margin-top:10px;font-size:18px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
+#conn{font-size:12px;margin-bottom:8px;color:#fff;text-align:center}
+#conn.ok{color:#9fff9f}
+#conn.bad{color:#ffb0b0}
+#panel{display:none}
+#qrows{margin-top:6px}
+.qrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.qrow input{margin:0;flex:1}
+.qrow .sw{margin:0;flex:none}
+.qdel{width:auto;min-height:38px;padding:4px 10px;margin:0;background:#a02020;flex:none}
+#qadd{margin-top:4px}
 </style></head><body>
 <div class="box">
-<div id="tb">
- <div class="r">
-  <button id="zm" aria-label="Thu nhỏ cỡ khung">A−</button>
-  <button id="zp" aria-label="Phóng to cỡ khung">A＋</button>
-  <button id="mn">▁ Thu nhỏ</button>
- </div>
-</div>
-<h2>Zalo Cuto</h2>
+<h2>🎮 Điều khiển — Taki Dice</h2>
+<div class="sub">Chọn chế độ, tên, màu trước — màn hình chính sẽ tự lắc xúc xắc.</div>
+<div id="conn">Đang kết nối...</div>
 
-<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
-<div class="n" id="localPanel">
- <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
+<div class="seg" id="modeSeg"></div>
+
+<div id="panel">
+
+<div id="pn" style="display:none">
+ <div class="lb" style="margin-top:10px">Số xúc xắc</div>
+ <div class="seg" id="ndSeg"></div>
+ <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường (Tuỳ chọn)</b></div>
  <div class="lb">Người 1</div>
- <input id="n1" placeholder="Nhập tên người 1" value="">
+ <input id="nn1" placeholder="Tên người 1">
+ <div class="sw" id="nsw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="nn2" placeholder="Tên người 2">
+ <div class="sw" id="nsw2"></div>
+ <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+ <div class="seg ten" id="ntgSeg"></div>
+</div>
+
+<div id="pe" style="display:none">
+ <div class="lb">Người 1</div>
+ <input id="n1" placeholder="Tên người 1">
  <div class="sw" id="sw1"></div>
  <div class="lb">Người 2</div>
- <input id="n2" placeholder="Nhập tên người 2" value="">
+ <input id="n2" placeholder="Tên người 2">
  <div class="sw" id="sw2"></div>
+ <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
+ <div class="seg ten" id="tgSeg"></div>
+ <div class="lb" style="margin-top:10px">⚡ Chế độ gian lận (Ép thắng)</div>
+ <div class="seg" id="rigSeg"></div>
 </div>
 
-<div id="score"><div id="sc"></div><div id="msg"></div></div>
+<div id="pq" style="display:none">
+ <div class="lb" style="margin-top:6px">Người chơi (chỉ lắc 1 xúc xắc, cho phép trùng màu)</div>
+ <div id="qrows"></div>
+ <button class="s" id="qadd">+ Thêm người</button>
+ <div class="lb" style="margin-top:10px">🎯 Ép màu tiếp theo (Không chọn = Ngẫu nhiên)</div>
+ <div class="sw" id="qNextSw"></div>
+</div>
 
-<div id="dice"></div>
+</div>
+
+<button id="send">📤 Gửi cấu hình</button>
 <div id="ban"></div>
-<button id="roll">ROLL AGAIN !</button>
-<button class="s" id="tv">🔊 Thử giọng nói</button>
-<div id="vs"></div>
 
-<div class="n pc">Possible colors are:
-<b style="color:#f00">Red</b>, <b style="color:#ffa500">Orange</b>,
-<b style="color:#ffd700">Yellow</b>, <b style="color:#0a0">Green</b>,
-<b style="color:#00f">Blue</b>, and <b style="color:#a020f0">Purple</b>.</div>
-
-<details>
-<summary>📊 Thống kê (bấm để mở)</summary>
-<div class="n" style="margin-top:8px"><b>Tổng số lần ra</b><div class="row" id="st"></div></div>
-<div class="n"><b>20 lượt gần nhất</b>
-<div class="row" id="st20"></div>
-<div id="fc" style="margin-top:8px"></div>
-<div id="hist"></div></div>
-<div class="n" id="rng"></div>
-<button class="s" id="t1k">🧪 Test 1000 lượt (kiểm tra công bằng)</button>
-<div class="n" id="t1r" style="display:none"></div>
-<button id="rs">Xóa thống kê</button>
-</details>
+<div class="n">Mở <b>man-hinh-chinh.html</b> trên điện thoại còn lại để xem xúc xắc và chơi.</div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
+var firebaseConfig = {
+  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+  authDomain: "taki-4b68b.firebaseapp.com",
+  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+  projectId: "taki-4b68b",
+  storageBucket: "taki-4b68b.firebasestorage.app",
+  messagingSenderId: "943690027603",
+  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+  measurementId: "G-CE9VKNFFX2"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var ROOM = "taki_room6";
+var cfgRef = db.ref(ROOM + "/config");
+
+var connEl=document.getElementById("conn");
+db.ref(".info/connected").on("value",function(s){
+  if(s.val()===true){connEl.textContent="🟢 Đã kết nối";connEl.className="ok";}
+  else{connEl.textContent="🔴 Mất kết nối, đang thử lại...";connEl.className="bad";}
+});
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
-var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
-var mode="n",nd=4;
-var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
-var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
-var q={on:false,rounds:0,house:0,p:[],nextColor:null};
-var box=document.getElementById("dice"),ban=document.getElementById("ban");
+var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
+var nTgt=5, nSel1=0, nSel2=1; 
+var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
+var qNextColor = null; 
 var $=function(i){return document.getElementById(i);};
-
-function show(res){
-  box.innerHTML="";
-  if(!res || !res.length) res = [0,1,2,3];
-  res.forEach(function(c){
-    var d=document.createElement("div");d.className="d";
-    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
-  });
-}
-show([0,1,2,3]);
 
 function tap(el,fn){
   var last=0;
-  function h(e){
-    var now=Date.now();
-    if(now-last<450)return;
-    last=now;
-    try{fn(e);}catch(err){}
-  }
+  function h(e){var now=Date.now();if(now-last<450)return;last=now;try{fn(e);}catch(err){}}
   el.addEventListener("pointerup",h);
   el.addEventListener("click",h);
 }
-
-var ZS=[.6,.7,.8,.9,1,1.1,1.2,1.35,1.5],zi=4,mini=false;
-try{
-  var sv=JSON.parse(localStorage.getItem("zv")||"null");
-  if(sv){
-    if(typeof sv.z==="number")zi=Math.max(0,Math.min(ZS.length-1,sv.z));
-    mini=!!sv.m;
-  }
-}catch(e){}
-function applyView(){
-  var b=document.querySelector(".box"),z=ZS[zi];
-  b.style.zoom=z;
-  b.style.width=(100/z)+"%";
-  b.className=mini?"box mini":"box";
-  $("mn").textContent=mini?"⬜ Phóng to":"▁ Thu nhỏ";
-  try{localStorage.setItem("zv",JSON.stringify({z:zi,m:mini}));}catch(e){}
+function seg(id,labels,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  labels.forEach(function(l,i){
+    var b=document.createElement("button");b.textContent=l;
+    if(i===start)b.className="on";
+    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
 }
-tap($("zm"),function(){if(zi>0){zi--;applyView();}});
-tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
-tap($("mn"),function(){mini=!mini;applyView();});
-
-function vstat(t){$("vs").textContent=t;}
-function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
-
-var voices=[];
-var ae=new Audio();ae.preload="auto";
-var SIL="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
-var unl=false;
-function unlock(){
-  if(unl)return;unl=true;
-  try{ae.src=SIL;var p=ae.play();if(p&&p.catch)p.catch(function(){});}catch(e){}
-}
-document.addEventListener("pointerdown",unlock);
-document.addEventListener("click",unlock);
-document.addEventListener("touchstart",unlock,{passive:true});
-
-function loadV(){try{voices=window.speechSynthesis.getVoices()||[];}catch(e){}}
-try{if(window.speechSynthesis){loadV();window.speechSynthesis.onvoiceschanged=loadV;}}catch(e){}
-
-var sq=[],sBusy=false,talking=false,sid=0;
-function say(text){sq.push(text);sProcess();}
-function stopSpeech(){
-  sq.length=0;sid++;sBusy=false;talking=false;
-  try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}
-  try{ae.pause();}catch(e){}
-}
-function sProcess(){
-  if(sBusy||!sq.length)return;
-  sBusy=true;
-  var text=sq.shift(),id=++sid,finished=false,started=false,viaG=false;
-  banner(text);
-  function done(){
-    if(finished||id!==sid)return;
-    finished=true;talking=false;sBusy=false;
-    setTimeout(sProcess,150);
-  }
-  function mark(){if(id===sid){started=true;talking=true;}}
-  function google(){
-    if(viaG||finished||id!==sid)return;
-    viaG=true;
-    try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}
-    ae.onplaying=function(){mark();vstat("Giọng đọc: Google ✓");};
-    ae.onended=done;
-    ae.onerror=function(){vstat("Máy không phát được giọng đọc");done();};
-    try{
-      ae.src="https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(text);
-      var p=ae.play();
-      if(p&&p.catch)p.catch(function(){vstat("Máy không phát được giọng đọc");done();});
-    }catch(e){done();}
-  }
-  setTimeout(done,8000);
-  try{
-    var s=window.speechSynthesis;
-    if(!s||typeof SpeechSynthesisUtterance==="undefined"){google();return;}
-    if(s.paused)s.resume();
-    if(!voices.length)loadV();
-    var u=new SpeechSynthesisUtterance(text);
-    u.lang="vi-VN";u.rate=1;u.pitch=1;u.volume=1;
-    var v=voices.filter(function(x){return x.lang&&x.lang.toLowerCase().indexOf("vi")===0;});
-    if(v.length)u.voice=v[0];
-    u.onstart=function(){mark();vstat("Giọng đọc: trình duyệt ✓");};
-    u.onend=function(){if(!viaG)done();};
-    u.onerror=function(){if(viaG)return;if(!started)google();else done();};
-    s.speak(u);
-    setTimeout(function(){if(!started&&!finished)google();},1200);
-  }catch(e){google();}
-}
-
-function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
-function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
-function stats(){
-  $("st").innerHTML=row(cnt);
-  var c20=[0,0,0,0,0,0];
-  rolls.forEach(function(r){r.forEach(function(c){c20[c]++;});});
-  $("st20").innerHTML=row(c20);
-  $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
-  var h="";
-  rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
-  $("hist").innerHTML=h;
-}
-function esc(s){return (s||"").replace(/[&<>]/g,"");}
-
-$("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
-tap($("t1k"),function(){
-  var c=[0,0,0,0,0,0],i;
-  for(i=0;i<4000;i++)c[rndInt(6)]++;
-  $("t1r").style.display="block";
-  $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
-});
-
-function scoreboard(msg, isNormal){
-  $("score").style.display="block";
-  var activeEv = isNormal ? nEv : ev;
-  var name1 = $("n1").value.trim() || activeEv.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || activeEv.n2 || "Người 2";
-  $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
-    ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
-  $("msg").textContent=msg||"";
-}
-
-function playEvent(res){
-  var a = res.filter(function(c){ return c === ev.c1; }).length; 
-  var b = res.filter(function(c){ return c === ev.c2; }).length; 
-  var name1 = $("n1").value.trim() || ev.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || ev.n2 || "Người 2";
-  var m = "";
-  
-  if(a > b){
-    var diff = a - b;
-    ev.s1 += diff;
-    m = name1 + " có " + a + " viên, " + name2 + " có " + b + " viên (" + name1 + " +" + diff + ")";
-  } else if(b > a){
-    var diff = b - a;
-    ev.s2 += diff;
-    m = name2 + " có " + b + " viên, " + name1 + " có " + a + " viên (" + name2 + " +" + diff + ")";
-  } else {
-    m = "Hòa (Không ai được cộng điểm)";
-  }
-  
-  var win = ev.s1 >= ev.t ? name1 : (ev.s2 >= ev.t ? name2 : "");
-  if(win){
-    ev.over = true;
-    m += " | " + win + " THẮNG CHUNG CUỘC!";
-  }
-  scoreboard(m);
-}
-
-function playNormalEvent(res){
-  var a = res.filter(function(c){ return c === nEv.c1; }).length;
-  var b = res.filter(function(c){ return c === nEv.c2; }).length;
-  var name1 = $("n1").value.trim() || nEv.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || nEv.n2 || "Người 2";
-  var m = "";
-  
-  if(a > b){
-    var diff = a - b;
-    nEv.s1 += diff;
-    m = name1 + " có " + a + " viên, " + name2 + " có " + b + " viên (" + name1 + " +" + diff + ")";
-  } else if(b > a){
-    var diff = b - a;
-    nEv.s2 += diff;
-    m = name2 + " có " + b + " viên, " + name1 + " có " + a + " viên (" + name2 + " +" + diff + ")";
-  } else {
-    m = "Hòa (Không ai được cộng điểm)";
-  }
-  
-  var win = nEv.s1 >= nEv.t ? name1 : (nEv.s2 >= nEv.t ? name2 : "");
-  if(win){
-    nEv.over = true;
-    m += " | " + win + " THẮNG CHUNG CUỘC!";
-  }
-  scoreboard(m, true);
-}
-
-function playQ(res){
-  q.rounds++;
-  var col=res[0];
-  var w=q.p.filter(function(p){return p.c===col;});
-  var m="";
-  if(w.length){ 
-    w.forEach(function(p){p.w++;}); 
-    var names = w.map(function(p){return p.n;}).join(" và ");
-    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
-    say(names);
-  } else { 
-    q.house++; 
-    m = "Nhà cái thắng vòng này";
-    say("nhà cái thắng");
-  }
-  $("score").style.display="block";
-  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
-  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
-  $("msg").textContent = m;
-}
-
-var lastConfigId = 0;
-function handleConfig(cfg){
-  if(!cfg) return;
-  
-  mode = cfg.mode || "n";
-  nd = (mode === "q") ? 1 : (cfg.nd || 4); // Cố định 1 xúc xắc nếu là Event nhiều người
-  
-  // Tự động ẩn bảng đặt tên 2 người nếu chuyển sang Event nhiều người
-  if(mode === "q") {
-    $("localPanel").style.display = "none";
-  } else {
-    $("localPanel").style.display = "block";
-  }
-
-  // Cập nhật giá trị màu ép từ Firebase
-  if(cfg.q && cfg.q.nextColor !== undefined) {
-    q.nextColor = cfg.q.nextColor;
-  }
-
-  if(cfg.configId && cfg.configId === lastConfigId) return;
-  lastConfigId = cfg.configId || 0;
-
-  $("score").style.display = "none";
-  ev.on = false; nEv.on = false; q.on = false;
-
-  if(mode === "e" && cfg.ev){
-    ev = {
-      on: true, over: false, s1: 0, s2: 0,
-      t: cfg.ev.t || 5, c1: cfg.ev.c1, c2: cfg.ev.c2,
-      n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
-      rig: cfg.ev.rig || 0
-    };
-    if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
-    if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    scoreboard("Bắt đầu! Bấm ROLL để chơi");
-    show([0,1,2,3,4,5].slice(0, nd));
-  } else if(mode === "n" && cfg.nEv){
-    nEv = {
-      on: true, over: false, s1: 0, s2: 0,
-      t: cfg.nEv.t || 5, c1: cfg.nEv.c1, c2: cfg.nEv.c2,
-      n1: cfg.nEv.n1 || "Người 1", n2: cfg.nEv.n2 || "Người 2"
-    };
-    if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
-    if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
-    show([0,1,2,3,4,5].slice(0, nd));
-  } else if(mode === "q" && cfg.q && cfg.q.players){
-    var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
-    q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
-    
-    $("score").style.display="block";
-    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
-    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
-    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
-    show([q.nextColor !== null ? q.nextColor : 0]);
-  }
-}
-
-function pollConfig(){
-  fetch(DB_URL)
-    .then(function(res){ return res.json(); })
-    .then(function(cfg){ handleConfig(cfg); })
-    .catch(function(err){});
-}
-setInterval(pollConfig, 1000);
-pollConfig();
-
-var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
   var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
     b.textContent=(i===start)?"✓":"";
-    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);syncLocalConfig();});
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
     el.appendChild(b);bs.push(b);
   });
 }
-swatches("sw1",localSel1,function(i){localSel1=i;});
-swatches("sw2",localSel2,function(i){localSel2=i;});
 
-function syncLocalConfig(){
-  if(localSel1===localSel2)return;
-  var cfg={
-    mode:"e",
-    configId:Date.now(),
-    ev:{
-      t:5,
-      c1:localSel1,
-      c2:localSel2,
+function qNextSwatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){
+      if(qNextColor===i){
+        qNextColor=null;
+        b.textContent="";
+      }else{
+        bs.forEach(function(x){x.textContent="";});
+        b.textContent="✓";
+        qNextColor=i;
+      }
+      cb(qNextColor);
+    });
+    el.appendChild(b);bs.push(b);
+  });
+}
+
+function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
+
+/* ---------- ROLL THƯỜNG CÓ BẢNG ĐÉM ---------- */
+swatches("nsw1",nSel1,function(i){nSel1=i;});
+swatches("nsw2",nSel2,function(i){nSel2=i;});
+var ntl=[];for(var t=1;t<=10;t++)ntl.push("Chạm "+t);
+seg("ntgSeg",ntl,nTgt-1,function(i){nTgt=i+1;});
+
+/* ---------- EVENT 2 NGƯỜI & GIAN LẬN ---------- */
+swatches("sw1",sel1,function(i){sel1=i;});
+swatches("sw2",sel2,function(i){sel2=i;});
+var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
+seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
+seg("rigSeg",["Công bằng", "Ép Người 1", "Ép Người 2"], 0, function(i){ rigVal = i; });
+
+/* ---------- EVENT NHIỀU NGƯỜI ---------- */
+function buildQRows(){
+  var h="";
+  qp.forEach(function(p,i){
+    h+='<div class="qrow"><input data-i="'+i+'" class="qn" placeholder="Tên người '+(i+1)+'" value="'+(p.n||"")+'">'+
+       '<div class="sw" id="qs'+i+'"></div>'+
+       (qp.length>2?'<button class="qdel" data-i="'+i+'">✕</button>':'')+
+       '</div>';
+  });
+  $("qrows").innerHTML=h;
+  qp.forEach(function(p,i){
+    swatches("qs"+i,p.c,function(c){qp[i].c=c;});
+  });
+  document.querySelectorAll("#qrows .qn").forEach(function(inp){
+    inp.addEventListener("input",function(){qp[+inp.dataset.i].n=inp.value;});
+  });
+  document.querySelectorAll("#qrows .qdel").forEach(function(b){
+    tap(b,function(){qp.splice(+b.dataset.i,1);buildQRows();});
+  });
+}
+buildQRows();
+tap($("qadd"),function(){
+  if(qp.length>=8){banner("Tối đa 8 người");return;}
+  qp.push({n:"",c:qp.length%6});
+  buildQRows();
+});
+
+qNextSwatches("qNextSw", qNextColor, function(c){ qNextColor=c; });
+
+/* ---------- CHẾ ĐỘ ---------- */
+function setMode(m){
+  mode=m;
+  $("pn").style.display=m==="n"?"block":"none";
+  $("pe").style.display=m==="e"?"block":"none";
+  $("pq").style.display=m==="q"?"block":"none";
+  $("panel").style.display="block";
+}
+seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,function(i){setMode(["n","e","q"][i]);});
+seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
+setMode("n");
+
+/* ---------- GỬI CẤU HÌNH ---------- */
+var configId=Date.now();
+tap($("send"),function(){
+  if(mode==="e"&&sel1===sel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  configId=Date.now();
+  var cfg={mode:mode,configId:configId};
+  if(mode==="n"){
+    cfg.nd=nd;
+    cfg.nEv={t:nTgt, c1:nSel1, c2:nSel2,
+      n1:$("nn1").value.trim()||"Người 1",
+      n2:$("nn2").value.trim()||"Người 2"};
+  } else if(mode==="e"){
+    cfg.ev={t:tgt, c1:sel1, c2:sel2,
       n1:$("n1").value.trim()||"Người 1",
       n2:$("n2").value.trim()||"Người 2",
-      rig:0
-    }
-  };
-  lastConfigId = cfg.configId;
-  fetch(DB_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cfg)
-  }).catch(function(e){});
-}
-
-$("n1").addEventListener("input",syncLocalConfig);
-$("n2").addEventListener("input",syncLocalConfig);
-
-var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
-function rndInt(n){
-  var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
-  do{
-    if(SECURE)window.crypto.getRandomValues(a);
-    else a[0]=Math.floor(Math.random()*4294967296);
-  }while(a[0]>=lim);
-  return a[0]%n;
-}
-
-function roll(){
-  if(busy)return;
-  if(mode==="n" && nEv.on && nEv.over){banner("Đã có người thắng!");return;}
-  if(mode==="e"){
-    if(!ev.on){banner("Chưa có cấu hình!");return;}
-    if(ev.over){banner("Đã có người thắng!");return;}
+      rig: rigVal};
+  } else if(mode==="q"){
+    cfg.nd = 1; // Cố định 1 xúc xắc cho chế độ Event nhiều người
+    var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
+    cfg.q={players:players, nextColor: qNextColor}; // Truyền thêm nextColor lên Firebase
   }
-  if(mode==="q" && !q.on){banner("Chưa có cấu hình!");return;}
-  
-  busy=true;
-  setTimeout(function(){busy=false;},1000);
-  
-  say("36");
-  
-  var md=mode,n=(md==="q")?1:nd,t=0;
-  var h=setInterval(function(){
-    try{
-      t++;
-      if(t<4){
-        var f=[];
-        for(var i=0;i<n;i++) f.push(rndInt(6));
-        show(f);
-      } else {
-        clearInterval(h);
-        var res=[];
-        if(md==="e" && ev.rig && ev.rig > 0){
-          var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
-          var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
-          
-          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-          
-          var numTarget, numOpp;
-          if (oppScore < myScore - 1) {
-            numTarget = rndInt(2);
-            numOpp = 1 + rndInt(2);
-          } else {
-            numTarget = 2;
-            numOpp = 1;
-          }
-          
-          for(var k=0; k<numTarget; k++) res.push(targetColor);
-          for(var k=0; k<numOpp; k++) res.push(oppColor);
-          
-          while(res.length < n){
-            var c = rndInt(6);
-            if(c !== targetColor && c !== oppColor) {
-              res.push(c);
-            }
-          }
-          res.sort(function(){ return Math.random() - 0.5; });
-        } else if(md==="q") {
-          // XỬ LÝ ÉP MÀU TIẾP THEO Ở CHẾ ĐỘ EVENT NHIỀU NGƯỜI
-          if(q.nextColor !== null && q.nextColor !== undefined) {
-            res.push(q.nextColor);
-            // Xóa màu ép trên Firebase sau khi đã ra mắt để lượt sau về ngẫu nhiên
-            fetch(DB_URL.replace("config.json", "config/q/nextColor.json"), {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(null)
-            }).catch(function(){});
-            q.nextColor = null;
-          } else {
-            res.push(rndInt(6));
-          }
-        } else {
-          for(var j=0;j<n;j++)res.push(rndInt(6));
-        }
-        
-        show(res);
-        res.forEach(function(c){cnt[c]++;});
-        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
-        rolls.unshift(res);if(rolls.length>20)rolls.pop();
-        stats();
-        busy=false;
- 
+  cfgRef.set(cfg);
+  banner("Đã gửi cấu hình thành công!");
+});
+</script>
+</body></html>
