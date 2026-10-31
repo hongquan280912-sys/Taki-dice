@@ -1,210 +1,88 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Taki Dice - Điều khiển</title>
-<style>
-*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
-body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#3b6ea5;display:flex;justify-content:center}
-.box{width:100%;max-width:420px;background:rgba(255,255,255,.25);border:4px solid #fff;border-radius:22px;padding:14px;text-align:center}
-h2{color:#fff;margin:0 0 6px;font-size:26px;text-shadow:0 2px 4px #0a3d91}
-.sub{color:#fff;font-size:13px;margin-bottom:12px;opacity:.9}
-input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
-button{width:100%;min-height:52px;padding:14px;font-size:20px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-button:active{filter:brightness(.8)}
-button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#2a7a4b}
-.seg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.seg button{width:auto;flex:1;min-width:0;min-height:44px;padding:8px 4px;margin:0;font-size:14px;background:rgba(255,255,255,.35);border:2px solid #fff;border-radius:10px}
-.seg button.on{background:#2a7a4b}
-.seg.ten button{flex:0 0 calc(20% - 5px)}
-.sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
-.lb{color:#fff;font-size:13px;text-align:left;margin-top:6px}
-.n{margin-top:14px;padding:8px;background:rgba(0,0,0,.35);color:#fff;font-size:13px;border-radius:8px;text-align:left}
-#ban{min-height:30px;margin-top:10px;font-size:18px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
-#conn{font-size:12px;margin-bottom:8px;color:#fff;text-align:center}
-#conn.ok{color:#9fff9f}
-#conn.bad{color:#ffb0b0}
-#panel{display:none}
-#qrows{margin-top:6px}
-.qrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
-.qrow input{margin:0;flex:1}
-.qrow .sw{margin:0;flex:none}
-.qdel{width:auto;min-height:38px;padding:4px 10px;margin:0;background:#a02020;flex:none}
-#qadd{margin-top:4px}
-</style></head><body>
-<div class="box">
-<h2>🎮 Điều khiển — Taki Dice</h2>
-<div class="sub">Chọn chế độ, màu và ép màu thắng trước — màn hình chính sẽ tự động cập nhật.</div>
-<div id="conn">Đang kết nối...</div>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zalo Cuto - Điều khiển</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: #fff; margin: 0; padding: 16px; }
+        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: left; }
+        h2 { text-align: center; color: #00ffcc; margin-top: 0; }
+        .n { margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .lb { font-size: 14px; margin-bottom: 6px; font-weight: bold; }
+        select, input { width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 2px solid #3b9cff; background: #fff; color: #000; box-sizing: border-box; margin-bottom: 10px; }
+        button { width: 100%; background-color: #3b9cff; color: #fff; border: none; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+        button:active { filter: brightness(0.8); }
+        .status { font-size: 14px; color: #ffaa00; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bảng Điều Khiển</h2>
+        
+        <div class="n">
+            <div class="lb">Chọn chế độ chơi:</div>
+            <select id="modeSelect" onchange="syncConfig()">
+                <option value="n">Roll thường (Nhiều hột xúc xắc)</option>
+                <option value="e">Event 2 người</option>
+            </select>
 
-<div class="seg" id="modeSeg"></div>
+            <div class="lb" id="ndLabel">Số lượng xúc xắc (Roll thường): <span id="ndVal">4</span></div>
+            <input type="range" id="ndRange" min="1" max="6" value="4" oninput="updateNdVal(); syncConfig();" style="accent-color: #3b9cff;">
+        </div>
 
-<div id="panel">
+        <button onclick="triggerRoll()">LẮC XÚ XẮC 🎲</button>
+        <div class="status" id="statusMsg">Sẵn sàng điều khiển</div>
+    </div>
 
-<div id="pn" style="display:none">
- <div class="lb" style="margin-top:10px">Số xúc xắc</div>
- <div class="seg" id="ndSeg"></div>
- <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường</b></div>
- <div class="lb">Chọn màu 1</div>
- <div class="sw" id="nsw1"></div>
- <div class="lb">Chọn màu 2</div>
- <div class="sw" id="nsw2"></div>
- <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
- <div class="seg ten" id="ntgSeg"></div>
-</div>
+    <script>
+        // Đường dẫn Firebase Database chung của bạn
+        const DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
 
-<div id="pe" style="display:none">
- <div class="lb">Chọn màu 1</div>
- <div class="sw" id="sw1"></div>
- <div class="lb">Chọn màu 2</div>
- <div class="sw" id="sw2"></div>
- <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
- <div class="seg ten" id="tgSeg"></div>
- <div class="lb" style="margin-top:10px">⚡ Chế độ gian lận (Ép màu thắng)</div>
- <div class="seg" id="rigSeg"></div>
-</div>
+        function updateNdVal() {
+            document.getElementById("ndVal").innerText = document.getElementById("ndRange").value;
+        }
 
-<div id="pq" style="display:none">
- <div class="lb" style="margin-top:6px">Người chơi (Tối đa 4 người, cho phép trùng màu)</div>
- <div id="qrows"></div>
- <button class="s" id="qadd">+ Thêm người</button>
- <div class="lb" style="margin-top:12px">🎯 Chọn màu ra tiếp theo (Ép màu tiếp theo)</div>
- <div class="sw" id="nextSw"></div>
-</div>
+        function syncConfig() {
+            let mode = document.getElementById("modeSelect").value;
+            let nd = parseInt(document.getElementById("ndRange").value);
+            
+            // Ẩn hiện slider tùy theo chế độ
+            if(mode === "e") {
+                document.getElementById("ndLabel").style.display = "none";
+                document.getElementById("ndRange").style.display = "none";
+            } else {
+                document.getElementById("ndLabel").style.display = "block";
+                document.getElementById("ndRange").style.display = "block";
+            }
 
-</div>
+            let cfg = {
+                mode: mode,
+                nd: nd,
+                configId: Date.now(),
+                nEv: { on: true, t: 5, c1: 4, c2: 2, n1: "Người 1", n2: "Người 2" },
+                ev: { on: true, t: 5, c1: 4, c2: 2, n1: "Người 1", n2: "Người 2", rig: 0 }
+            };
 
-<button id="send">📤 Gửi cấu hình</button>
-<div id="ban"></div>
+            fetch(DB_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cfg)
+            })
+            .then(res => {
+                if(res.ok) {
+                    document.getElementById("statusMsg").innerText = "Đã đồng bộ cấu hình thành công!";
+                }
+            })
+            .catch(err => {
+                document.getElementById("statusMsg").innerText = "Lỗi kết nối mạng!";
+            });
+        }
 
-<div class="n">Mở <b>man-hinh-chinh.html</b> trên điện thoại còn lại để xem xúc xắc và chơi.</div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script>
-var firebaseConfig = {
-  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
-  authDomain: "taki-4b68b.firebaseapp.com",
-  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
-  projectId: "taki-4b68b",
-  storageBucket: "taki-4b68b.firebasestorage.app",
-  messagingSenderId: "943690027603",
-  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
-  measurementId: "G-CE9VKNFFX2"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
-var ROOM = "taki_room6";
-var cfgRef = db.ref(ROOM + "/config");
-
-var connEl=document.getElementById("conn");
-db.ref(".info/connected").on("value",function(s){
-  if(s.val()===true){connEl.textContent="🟢 Đã kết nối";connEl.className="ok";}
-  else{connEl.textContent="🔴 Mất kết nối, đang thử lại...";connEl.className="bad";}
-});
-
-var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
-var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
-var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1; 
-var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
-var nextColorSel=0;
-var $=function(i){return document.getElementById(i);};
-
-function tap(el,fn){
-  var last=0;
-  function h(e){var now=Date.now();if(now-last<450)return;last=now;try{fn(e);}catch(err){}}
-  el.addEventListener("pointerup",h);
-  el.addEventListener("click",h);
-}
-function seg(id,labels,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
-  labels.forEach(function(l,i){
-    var b=document.createElement("button");b.textContent=l;
-    if(i===start)b.className="on";
-    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
-    el.appendChild(b);bs.push(b);
-  });
-}
-function swatches(id,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
-  C.forEach(function(c,i){
-    var b=document.createElement("button");
-    b.style.background=c;b.setAttribute("aria-label",CS[i]);
-    b.textContent=(i===start)?"✓":"";
-    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
-    el.appendChild(b);bs.push(b);
-  });
-}
-function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
-
-swatches("nsw1",nSel1,function(i){nSel1=i;});
-swatches("nsw2",nSel2,function(i){nSel2=i;});
-var ntl=[];for(var t=1;t<=10;t++)ntl.push("Chạm "+t);
-seg("ntgSeg",ntl,nTgt-1,function(i){nTgt=i+1;});
-
-swatches("sw1",sel1,function(i){sel1=i;});
-swatches("sw2",sel2,function(i){sel2=i;});
-var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
-seg("tgSeg",tl,tgt-1,function(i){tgt=i+1;});
-seg("rigSeg",["Công bằng", "Ép Màu 1", "Ép Màu 2"], 0, function(i){ rigVal = i; });
-
-swatches("nextSw",nextColorSel,function(i){nextColorSel=i;});
-
-function buildQRows(){
-  var h="";
-  qp.forEach(function(p,i){
-    h+='<div class="qrow"><input data-i="'+i+'" class="qn" placeholder="Tên người '+(i+1)+'" value="'+(p.n||"")+'">'+
-       '<div class="sw" id="qs'+i+'"></div>'+
-       (qp.length>1?'<button class="qdel" data-i="'+i+'">✕</button>':'')+
-       '</div>';
-  });
-  $("qrows").innerHTML=h;
-  qp.forEach(function(p,i){
-    swatches("qs"+i,p.c,function(c){qp[i].c=c;});
-  });
-  document.querySelectorAll("#qrows .qn").forEach(function(inp){
-    inp.addEventListener("input",function(){qp[+inp.dataset.i].n=inp.value;});
-  });
-  document.querySelectorAll("#qrows .qdel").forEach(function(b){
-    tap(b,function(){qp.splice(+b.dataset.i,1);buildQRows();});
-  });
-}
-buildQRows();
-tap($("qadd"),function(){
-  if(qp.length>=4){banner("Tối đa 4 người chơi");return;}
-  qp.push({n:"",c:qp.length%6});
-  buildQRows();
-});
-
-function setMode(m){
-  mode=m;
-  $("pn").style.display=m==="n"?"block":"none";
-  $("pe").style.display=m==="e"?"block":"none";
-  $("pq").style.display=m==="q"?"block":"none";
-  $("panel").style.display="block";
-}
-seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,function(i){setMode(["n","e","q"][i]);});
-seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
-setMode("n");
-
-var configId=Date.now();
-tap($("send"),function(){
-  if(mode==="e"&&sel1===sel2){banner("Hai màu không được trùng nhau!");return;}
-  configId=Date.now();
-  var cfg={mode:mode,configId:configId};
-  if(mode==="n"){
-    cfg.nd=nd;
-    cfg.nEv={t:nTgt, c1:nSel1, c2:nSel2, n1:"Người 1", n2:"Người 2"};
-  } else if(mode==="e"){
-    cfg.ev={t:tgt, c1:sel1, c2:sel2, n1:"Người 1", n2:"Người 2", rig: rigVal};
-  } else if(mode==="q"){
-    var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
-    cfg.q={players:players, nextColor:nextColorSel};
-  }
-  cfgRef.set(cfg);
-  banner("Đã gửi cấu hình thành công!");
-});
-</script>
-</body></html>
+        function triggerRoll() {
+            syncConfig();
+            document.getElementById("statusMsg").innerText = "Đã gửi lệnh Lắc Xúc Xắc!";
+        }
+    </script>
+</body>
+</html>
