@@ -107,6 +107,16 @@ var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
+// HIỂN THỊ XÚC XẮC MẶC ĐỊNH NGAY LẬP TỨC KHI MỞ TRANG
+function show(res){
+  box.innerHTML="";
+  res.forEach(function(c){
+    var d=document.createElement("div");d.className="d";
+    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
+  });
+}
+show([0, 1, 2, 3]); // Hiện luôn 4 hột xúc xắc mặc định để không bị trống
+
 function tap(el,fn){
   var last=0;
   function h(e){
@@ -218,13 +228,7 @@ function stats(){
   rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
   $("hist").innerHTML=h;
 }
-function show(res){
-  box.innerHTML="";
-  res.forEach(function(c){
-    var d=document.createElement("div");d.className="d";
-    d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
-  });
-}
+
 function esc(s){return (s||"").replace(/[&<>]/g,"");}
 
 $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
@@ -300,11 +304,7 @@ function playNormalEvent(res){
 }
 
 function handleConfig(cfg){
-  if(!cfg) {
-    show([0,1,2,3]);
-    stats();
-    return;
-  }
+  if(!cfg) return;
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
