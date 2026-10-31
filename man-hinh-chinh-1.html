@@ -50,6 +50,12 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo Cuto</h2>
 
+<!-- Chọn phòng riêng -->
+<div class="n" id="roomPanel">
+ <div class="lb"><b>Nhập Tên Phòng Riêng:</b></div>
+ <input id="roomInput" placeholder="Nhập tên phòng" value="taki_room6">
+</div>
+
 <!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
@@ -89,7 +95,10 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
+var currentRoom = ($("roomInput") ? $("roomInput").value.trim() : "taki_room6") || "taki_room6";
+function getDBUrl() {
+  return "https://taki-4b68b-default-rtdb.firebaseio.com/" + encodeURIComponent(currentRoom) + "/config.json";
+}
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -98,7 +107,7 @@ var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2"};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
-var $=function(i){return document.getElementById(i);};
+function $(i){return document.getElementById(i);}
 
 function show(res){
   box.innerHTML="";
@@ -334,7 +343,7 @@ function handleConfig(cfg){
 }
 
 function pollConfig(){
-  fetch(DB_URL)
+  fetch(getDBUrl())
     .then(function(res){ return res.json(); })
     .then(function(cfg){ handleConfig(cfg); })
     .catch(function(err){});
@@ -342,7 +351,6 @@ function pollConfig(){
 setInterval(pollConfig, 1000);
 pollConfig();
 
-// Đặt mặc định 2 người 2 màu khác nhau (0: Đỏ, 4: Xanh dương) để tránh xung đột luôn hòa
 var localSel1=0, localSel2=4;
 function swatches(id,start,cb){
   var el=$(id),bs=[];el.innerHTML="";
@@ -350,12 +358,7 @@ function swatches(id,start,cb){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
     b.textContent=(i===start)?"✓":"";
-    tap(b,function(){
-      bs.forEach(function(x){x.textContent="";});
-      b.textContent="✓";
-      cb(i);
-      syncLocalConfig();
-    });
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);syncLocalConfig();});
     el.appendChild(b);bs.push(b);
   });
 }
@@ -377,7 +380,7 @@ function syncLocalConfig(){
     }
   };
   lastConfigId = cfg.configId;
-  fetch(DB_URL, {
+  fetch(getDBUrl(), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(cfg)
@@ -386,6 +389,11 @@ function syncLocalConfig(){
 
 $("n1").addEventListener("input",syncLocalConfig);
 $("n2").addEventListener("input",syncLocalConfig);
+$("roomInput").addEventListener("change", function(){
+  currentRoom = this.value.trim() || "taki_room6";
+  lastConfigId = 0;
+  pollConfig();
+});
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
