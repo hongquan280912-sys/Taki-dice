@@ -51,7 +51,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<!-- Phần cài đặt tên và chọn màu trực tiếp trên màn hình chính -->
+<!-- Phần đặt tên và chọn màu trực tiếp trên màn hình chính -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
  <div class="lb">Người 1</div>
@@ -60,7 +60,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <div class="lb">Người 2</div>
  <input id="n2" placeholder="Tên người 2" value="Người 2">
  <div class="sw" id="sw2"></div>
- <button class="s" id="applyLocal" style="margin-top:8px">💾 Cập nhật nhanh</button>
 </div>
 
 <div id="waiting">⏳ Đang tải cấu hình...</div>
@@ -252,29 +251,33 @@ tap($("t1k"),function(){
 function scoreboard(msg, isNormal){
   $("score").style.display="block";
   var activeEv = isNormal ? nEv : ev;
-  $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(activeEv.n1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
-    ' <span style="color:'+C[activeEv.c2]+'">'+esc(activeEv.n2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
+  var name1 = $("n1").value.trim() || activeEv.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || activeEv.n2 || "Người 2";
+  $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
+    ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
   $("msg").textContent=msg||"";
 }
 
 function playEvent(res){
   var a = res.filter(function(c){ return c === ev.c1; }).length; 
   var b = res.filter(function(c){ return c === ev.c2; }).length; 
+  var name1 = $("n1").value.trim() || ev.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || ev.n2 || "Người 2";
   var m = "";
   
   if(a > b){
     var diff = a - b;
     ev.s1 += diff;
-    m = ev.n1 + " có " + a + " viên, " + ev.n2 + " có " + b + " viên (" + ev.n1 + " +" + diff + ")";
+    m = name1 + " có " + a + " viên, " + name2 + " có " + b + " viên (" + name1 + " +" + diff + ")";
   } else if(b > a){
     var diff = b - a;
     ev.s2 += diff;
-    m = ev.n2 + " có " + b + " viên, " + ev.n1 + " có " + a + " viên (" + ev.n2 + " +" + diff + ")";
+    m = name2 + " có " + b + " viên, " + name1 + " có " + a + " viên (" + name2 + " +" + diff + ")";
   } else {
     m = "Hòa (Không ai được cộng điểm)";
   }
   
-  var win = ev.s1 >= ev.t ? ev.n1 : (ev.s2 >= ev.t ? ev.n2 : "");
+  var win = ev.s1 >= ev.t ? name1 : (ev.s2 >= ev.t ? name2 : "");
   if(win){
     ev.over = true;
     m += " | " + win + " THẮNG CHUNG CUỘC!";
@@ -285,21 +288,23 @@ function playEvent(res){
 function playNormalEvent(res){
   var a = res.filter(function(c){ return c === nEv.c1; }).length;
   var b = res.filter(function(c){ return c === nEv.c2; }).length;
+  var name1 = $("n1").value.trim() || nEv.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || nEv.n2 || "Người 2";
   var m = "";
   
   if(a > b){
     var diff = a - b;
     nEv.s1 += diff;
-    m = nEv.n1 + " có " + a + " viên, " + nEv.n2 + " có " + b + " viên (" + nEv.n1 + " +" + diff + ")";
+    m = name1 + " có " + a + " viên, " + name2 + " có " + b + " viên (" + name1 + " +" + diff + ")";
   } else if(b > a){
     var diff = b - a;
     nEv.s2 += diff;
-    m = nEv.n2 + " có " + b + " viên, " + nEv.n1 + " có " + a + " viên (" + nEv.n2 + " +" + diff + ")";
+    m = name2 + " có " + b + " viên, " + name1 + " có " + a + " viên (" + name2 + " +" + diff + ")";
   } else {
     m = "Hòa (Không ai được cộng điểm)";
   }
   
-  var win = nEv.s1 >= nEv.t ? nEv.n1 : (nEv.s2 >= nEv.t ? nEv.n2 : "");
+  var win = nEv.s1 >= nEv.t ? name1 : (nEv.s2 >= nEv.t ? name2 : "");
   if(win){
     nEv.over = true;
     m += " | " + win + " THẮNG CHUNG CUỘC!";
@@ -336,6 +341,10 @@ cfgRef.on("value", function(snap){
       n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
       rig: cfg.ev.rig || 0
     };
+    if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
+    if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
+    if(cfg.ev.n1)$("n1").value=cfg.ev.n1;
+    if(cfg.ev.n2)$("n2").value=cfg.ev.n2;
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
   } else if(mode === "n" && cfg.nEv){
     nEv = {
@@ -343,6 +352,10 @@ cfgRef.on("value", function(snap){
       t: cfg.nEv.t || 5, c1: cfg.nEv.c1, c2: cfg.nEv.c2,
       n1: cfg.nEv.n1 || "Người 1", n2: cfg.nEv.n2 || "Người 2"
     };
+    if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
+    if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
+    if(cfg.nEv.n1)$("n1").value=cfg.nEv.n1;
+    if(cfg.nEv.n2)$("n2").value=cfg.nEv.n2;
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
@@ -359,15 +372,15 @@ function swatches(id,start,cb){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
     b.textContent=(i===start)?"✓":"";
-    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);syncLocalConfig();});
     el.appendChild(b);bs.push(b);
   });
 }
 swatches("sw1",localSel1,function(i){localSel1=i;});
 swatches("sw2",localSel2,function(i){localSel2=i;});
 
-tap($("applyLocal"),function(){
-  if(localSel1===localSel2){banner("Hai người phải chọn màu khác nhau!");return;}
+function syncLocalConfig(){
+  if(localSel1===localSel2)return;
   var cfg={
     mode:"e",
     configId:Date.now(),
@@ -381,8 +394,10 @@ tap($("applyLocal"),function(){
     }
   };
   cfgRef.set(cfg);
-  banner("Đã lưu và áp dụng cấu hình!");
-});
+}
+
+$("n1").addEventListener("input",syncLocalConfig);
+$("n2").addEventListener("input",syncLocalConfig);
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
