@@ -53,7 +53,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 
 <!-- Mục 1: Event 2 người / Roll thường -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
+ <div class="lb"><b>Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
@@ -63,9 +63,12 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <!-- Mục 2: Event nhiều người -->
-<div class="n" id="qDisplayPanel" style="display:none"></div>
+<div class="n" id="qDisplayPanel">
+ <div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div>
+ <div id="qListContent" style="margin-top:6px">Đang chờ cấu hình...</div>
+</div>
 
-<div id="waiting">⏳ Đang tải cấu hình...</div>
+<div id="waiting">⏳ Đang kết nối dữ liệu...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -345,9 +348,6 @@ cfgRef.on("value", function(snap){
   $("score").style.display = "none";
   ev.on = false; q.on = false; nEv.on = false;
 
-  $("localPanel").style.display = (mode === "q") ? "none" : "block";
-  $("qDisplayPanel").style.display = (mode === "q") ? "block" : "none";
-
   if(mode === "e" && cfg.ev){
     ev = {
       on: true, over: false, s1: 0, s2: 0,
@@ -371,7 +371,7 @@ cfgRef.on("value", function(snap){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
     
-    var qHtml = '<div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div><div style="margin-top:6px">';
+    var qHtml = '<div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div><div style="margin-top:6px">';
     cfg.q.players.forEach(function(pl, idx){
       qHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:4px;background:rgba(0,0,0,0.2);border-radius:6px;">' +
                '<span style="font-weight:bold;flex:1">' + esc(pl.n) + '</span>' +
@@ -379,7 +379,7 @@ cfgRef.on("value", function(snap){
                '</div>';
     });
     qHtml += '</div>';
-    $("qDisplayPanel").innerHTML = qHtml;
+    $("qListContent").innerHTML = qHtml;
     
     $("score").style.display="block";
     var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
@@ -488,5 +488,4 @@ function roll(){
           if(q.nextColor !== null && q.nextColor !== undefined) {
             res.push(q.nextColor);
           } else {
-            res.push(rndInt(6));
-      
+            res.p
