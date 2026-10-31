@@ -52,8 +52,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 
 <!-- Chọn phòng riêng -->
 <div class="n" id="roomPanel">
- <div class="lb"><b>Nhập Tên Phòng Riêng:</b></div>
- <input id="roomInput" placeholder="Nhập tên phòng" value="taki_room6">
+ <div class="lb"><b>Tên phòng hiện tại:</b></div>
+ <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
 </div>
 
 <!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
@@ -95,7 +95,16 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-var currentRoom = ($("roomInput") ? $("roomInput").value.trim() : "taki_room6") || "taki_room6";
+// Bạn có thể đổi tên phòng tại khung nhập trên màn hình hoặc đổi mặc định ở đây:
+var currentRoom = "taki_room6";
+try {
+  var urlParams = new URLSearchParams(window.location.search);
+  var roomParam = urlParams.get('room');
+  if (roomParam) {
+    currentRoom = roomParam;
+  }
+} catch(e) {}
+
 function getDBUrl() {
   return "https://taki-4b68b-default-rtdb.firebaseio.com/" + encodeURIComponent(currentRoom) + "/config.json";
 }
@@ -104,10 +113,14 @@ var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
-var ev={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2",rig:0};
-var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:0,c2:4,n1:"Người 1",n2:"Người 2"};
+var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
+var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
-function $(i){return document.getElementById(i);}
+var $=function(i){return document.getElementById(i);};
+
+if ($("roomInput")) {
+  $("roomInput").value = currentRoom;
+}
 
 function show(res){
   box.innerHTML="";
@@ -351,7 +364,7 @@ function pollConfig(){
 setInterval(pollConfig, 1000);
 pollConfig();
 
-var localSel1=0, localSel2=4;
+var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
   var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
@@ -389,11 +402,14 @@ function syncLocalConfig(){
 
 $("n1").addEventListener("input",syncLocalConfig);
 $("n2").addEventListener("input",syncLocalConfig);
-$("roomInput").addEventListener("change", function(){
-  currentRoom = this.value.trim() || "taki_room6";
-  lastConfigId = 0;
-  pollConfig();
-});
+
+if ($("roomInput")) {
+  $("roomInput").addEventListener("change", function(){
+    currentRoom = this.value.trim() || "taki_room6";
+    lastConfigId = 0;
+    pollConfig();
+  });
+}
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
