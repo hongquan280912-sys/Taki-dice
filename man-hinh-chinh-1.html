@@ -53,7 +53,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 
 <!-- Mục 1: Event 2 người / Roll thường -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
+ <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
@@ -63,9 +63,9 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <!-- Mục 2: Event nhiều người -->
-<div class="n" id="qDisplayPanel">
- <div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div>
- <div id="qListContent" style="margin-top:6px">Đang chờ cấu hình...</div>
+<div class="n" id="qDisplayPanel" style="display:none">
+ <div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div>
+ <div id="qListContent" style="margin-top:6px"></div>
 </div>
 
 <div id="waiting">⏳ Đang kết nối dữ liệu...</div>
@@ -340,13 +340,16 @@ function playQ(res){
 }
 
 cfgRef.on("value", function(snap){
+  $("waiting").style.display="none"; // Ẩn ngay lập tức khi có phản hồi từ Firebase
   var cfg = snap.val();
   if(!cfg) return;
-  $("waiting").style.display="none";
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; q.on = false; nEv.on = false;
+
+  $("localPanel").style.display = (mode === "q") ? "none" : "block";
+  $("qDisplayPanel").style.display = (mode === "q") ? "block" : "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -357,7 +360,6 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    scoreboard("Bắt đầu! Bấm ROLL để chơi");
   } else if(mode === "n" && cfg.nEv){
     nEv = {
       on: true, over: false, s1: 0, s2: 0,
@@ -366,12 +368,11 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
     
-    var qHtml = '<div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div><div style="margin-top:6px">';
+    var qHtml = '<div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div><div style="margin-top:6px">';
     cfg.q.players.forEach(function(pl, idx){
       qHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:4px;background:rgba(0,0,0,0.2);border-radius:6px;">' +
                '<span style="font-weight:bold;flex:1">' + esc(pl.n) + '</span>' +
@@ -380,11 +381,6 @@ cfgRef.on("value", function(snap){
     });
     qHtml += '</div>';
     $("qListContent").innerHTML = qHtml;
-    
-    $("score").style.display="block";
-    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
-    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
-    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
   show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
 });
@@ -488,4 +484,13 @@ function roll(){
           if(q.nextColor !== null && q.nextColor !== undefined) {
             res.push(q.nextColor);
           } else {
-            res.p
+            res.push(rndInt(6));
+          }
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        
+        show(res);
+        res.forEach(function(c){cnt[c]++;});
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(
