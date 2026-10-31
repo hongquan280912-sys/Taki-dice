@@ -109,7 +109,7 @@ db.ref(".info/connected").on("value",function(s){
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1;
+var nTgt=5, nSel1=0, nSel2=1; // Cấu hình mặc định cho bảng đếm Roll thường
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
 var $=function(i){return document.getElementById(i);};
 
@@ -209,7 +209,7 @@ tap($("send"),function(){
       n2:$("n2").value.trim()||"Người 2",
       rig: rigVal};
   } else if(mode==="q"){
-    cfg.nd = 1; // Cố định số lượng xúc xắc bằng 1 cho chế độ Event nhiều người
+    cfg.nd = 1; // Event nhiều người chỉ có 1 xúc xắc
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
     cfg.q={players:players};
   }
