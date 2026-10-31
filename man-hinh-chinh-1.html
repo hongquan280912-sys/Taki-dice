@@ -56,25 +56,14 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 
 <!-- Bảng đặt tên và chọn màu trực tiếp trên màn hình chính -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Cấu hình nhanh tại máy</b></div>
- <div class="seg" id="modeSeg"></div>
- <div id="pn" style="display:none">
-  <div class="lb" style="margin-top:6px">Số xúc xắc</div>
-  <div class="seg" id="ndSeg"></div>
- </div>
- <div id="pe" style="display:none">
-  <div class="lb">Người 1</div>
-  <input id="n1" placeholder="Tên người 1" value="Người 1">
-  <div class="sw" id="sw1"></div>
-  <div class="lb">Người 2</div>
-  <input id="n2" placeholder="Tên người 2" value="Người 2">
-  <div class="sw" id="sw2"></div>
-  <div class="lb">Chạm bao nhiêu điểm thì thắng?</div>
-  <div class="seg" id="tgSeg"></div>
-  <div class="lb" style="margin-top:6px">⚡ Chế độ gian lận (Ép thắng)</div>
-  <div class="seg" id="rigSeg"></div>
- </div>
- <button class="s" id="applyLocal" style="margin-top:8px">💾 Lưu & Áp dụng</button>
+ <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
+ <div class="lb">Người 1</div>
+ <input id="n1" placeholder="Tên người 1" value="Người 1">
+ <div class="sw" id="sw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="n2" placeholder="Tên người 2" value="Người 2">
+ <div class="sw" id="sw2"></div>
+ <button class="s" id="applyLocal" style="margin-top:8px">💾 Cập nhật nhanh</button>
 </div>
 
 <div id="waiting">⏳ Đang tải cấu hình...</div>
@@ -366,16 +355,7 @@ cfgRef.on("value", function(snap){
   banner("Đã nhận cấu hình mới!");
 });
 
-var localMode="n", localNd=4, localTgt=5, localSel1=4, localSel2=2, localRig=0;
-function seg(id,labels,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
-  labels.forEach(function(l,i){
-    var b=document.createElement("button");b.textContent=l;
-    if(i===start)b.className="on";
-    tap(b,function(){bs.forEach(function(x){x.className="";});b.className="on";cb(i);});
-    el.appendChild(b);bs.push(b);
-  });
-}
+var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
   var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
@@ -386,31 +366,25 @@ function swatches(id,start,cb){
     el.appendChild(b);bs.push(b);
   });
 }
-seg("modeSeg",["Roll thường","Event 2 người"],0,function(i){
-  localMode = i===0 ? "n" : "e";
-  $("pn").style.display = i===0 ? "block" : "none";
-  $("pe").style.display = i===1 ? "block" : "none";
-});
-seg("ndSeg",["1","2","3","4","5","6"],3,function(i){localNd=i+1;});
 swatches("sw1",localSel1,function(i){localSel1=i;});
 swatches("sw2",localSel2,function(i){localSel2=i;});
-var tl=[];for(var t=1;t<=10;t++)tl.push("Chạm "+t);
-seg("tgSeg",tl,localTgt-1,function(i){localTgt=i+1;});
-seg("rigSeg",["Công bằng","Ép Người 1","Ép Người 2"],0,function(i){localRig=i;});
-$("pn").style.display="block";
-$("pe").style.display="none";
 
 tap($("applyLocal"),function(){
-  if(localMode==="e" && localSel1===localSel2){banner("Hai người phải chọn màu khác nhau!");return;}
-  var cfg={mode:localMode, configId:Date.now()};
-  if(localMode==="n"){
-    cfg.nd=localNd;
-    cfg.nEv={t:localTgt, c1:localSel1, c2:localSel2, n1:$("n1").value.trim()\vert{}\vert{}"Người 1", n2:$("n2").value.trim()||"Người 2"};
-  } else {
-    cfg.ev={t:localTgt, c1:localSel1, c2:localSel2, n1:$("n1").value.trim()\vert{}\vert{}"Người 1", n2:$("n2").value.trim()||"Người 2", rig:localRig};
-  }
+  if(localSel1===localSel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  var cfg={
+    mode:"e",
+    configId:Date.now(),
+    ev:{
+      t:5,
+      c1:localSel1,
+      c2:localSel2,
+      n1:$("n1").value.trim()||"Người 1",
+      n2:$("n2").value.trim()||"Người 2",
+      rig:0
+    }
+  };
   cfgRef.set(cfg);
-  banner("Đã lưu và áp dụng cấu hình!");
+  banner("Đã lưu và áp dụng cấu hình nhanh!");
 });
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
@@ -493,4 +467,9 @@ function roll(){
     }catch(err){clearInterval(h);busy=false;}
   },25);
 }
-tap($("roll"),rol
+tap($("roll"),roll);
+tap($("tv"),function(){if(talking)return;stopSpeech();say("36");});
+tap($("rs"),function(){cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats();});
+show([0,1,2,3]);stats();applyView();
+</script>
+</body></html>
