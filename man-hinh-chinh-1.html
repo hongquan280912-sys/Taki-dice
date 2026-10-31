@@ -48,7 +48,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<div id="waiting">⏳ Đang tải cấu hình...</div>
+<div id="waiting">⏳ Đang chờ cấu hình từ bộ điều khiển...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -318,7 +318,7 @@ cfgRef.on("value", function(snap){
     ev = {
       on: true, over: false, s1: 0, s2: 0,
       t: cfg.ev.t || 5, c1: cfg.ev.c1, c2: cfg.ev.c2,
-      n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
+      n1: "Người 1", n2: "Người 2",
       rig: cfg.ev.rig || 0
     };
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
@@ -326,7 +326,7 @@ cfgRef.on("value", function(snap){
     nEv = {
       on: true, over: false, s1: 0, s2: 0,
       t: cfg.nEv.t || 5, c1: cfg.nEv.c1, c2: cfg.nEv.c2,
-      n1: cfg.nEv.n1 || "Người 1", n2: cfg.nEv.n2 || "Người 2"
+      n1: "Người 1", n2: "Người 2"
     };
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
