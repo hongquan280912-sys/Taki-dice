@@ -30,13 +30,12 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
-#waiting{display:none!important}
 input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
 .sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting,.box.mini #localPanel,.box.mini #qDisplayPanel{display:none!important}
+.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel,.box.mini #qDisplayPanel{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
 .box.mini #score{font-size:16px;margin-top:6px}
@@ -51,9 +50,9 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo Cuto</h2>
 
-<!-- Mục 1: Event 2 người / Roll thường -->
+<!-- Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
- <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
+ <div class="lb"><b>Mục 1: Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
@@ -62,10 +61,10 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <div class="sw" id="sw2"></div>
 </div>
 
-<!-- Mục 2: Event nhiều người -->
-<div class="n" id="qDisplayPanel" style="display:none">
- <div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div>
- <div id="qListContent" style="margin-top:6px"></div>
+<!-- Mục 2: Danh sách người chơi (Event nhiều người) -->
+<div class="n" id="qDisplayPanel">
+ <div class="lb"><b>Mục 2: Danh sách người chơi (Event nhiều người)</b></div>
+ <div id="qListContent" style="margin-top:6px">Chưa có người chơi nào được cấu hình từ bảng điều khiển.</div>
 </div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
@@ -339,14 +338,15 @@ function playQ(res){
 
 cfgRef.on("value", function(snap){
   var cfg = snap.val();
-  if(!cfg) return;
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; q.on = false; nEv.on = false;
-
-  $("localPanel").style.display = (mode === "q") ? "none" : "block";
-  $("qDisplayPanel").style.display = (mode === "q") ? "block" : "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -357,6 +357,7 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
+    scoreboard("Bắt đầu! Bấm ROLL để chơi");
   } else if(mode === "n" && cfg.nEv){
     nEv = {
       on: true, over: false, s1: 0, s2: 0,
@@ -365,19 +366,24 @@ cfgRef.on("value", function(snap){
     };
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
+    scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
     q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
     
-    var qHtml = '<div class="lb"><b>Danh sách người chơi (Event nhiều người)</b></div><div style="margin-top:6px">';
+    var qHtml = '';
     cfg.q.players.forEach(function(pl, idx){
       qHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;padding:4px;background:rgba(0,0,0,0.2);border-radius:6px;">' +
                '<span style="font-weight:bold;flex:1">' + esc(pl.n) + '</span>' +
                '<div class="m" style="background:' + C[pl.c] + '"><i></i></div>' +
                '</div>';
     });
-    qHtml += '</div>';
     $("qListContent").innerHTML = qHtml;
+    
+    $("score").style.display="block";
+    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
+    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
+    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
   show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
 });
@@ -489,12 +495,4 @@ function roll(){
         
         show(res);
         res.forEach(function(c){cnt[c]++;});
-        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
-        rolls.unshift(res);if(rolls.length>20)rolls.pop();
-        stats();
-        busy=false;
-        if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q")playQ(res);
-      }
-    }catch(err){clearInte
+        if(n===4&&res.filter(function(c,i){return res
