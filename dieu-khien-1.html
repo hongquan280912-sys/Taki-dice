@@ -44,7 +44,7 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <div id="pn" style="display:none">
  <div class="lb" style="margin-top:10px">Số xúc xắc</div>
  <div class="seg" id="ndSeg"></div>
- <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường</b></div>
+ <div class="lb" style="margin-top:10px"><b>Bảng đếm điểm Roll thường (Tuỳ chọn)</b></div>
  <div class="lb">Người 1</div>
  <input id="nn1" placeholder="Tên người 1">
  <div class="sw" id="nsw1"></div>
@@ -109,7 +109,7 @@ db.ref(".info/connected").on("value",function(s){
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1;
+var nTgt=5, nSel1=0, nSel2=1; 
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
 var $=function(i){return document.getElementById(i);};
 
