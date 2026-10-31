@@ -31,9 +31,12 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
 #msg{font-size:14px;font-weight:normal;color:#444;margin-top:4px}
 #waiting{margin-top:14px;padding:12px;background:rgba(0,0,0,.35);color:#fff;border-radius:12px;font-size:14px}
+input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:bold;color:#1a56c4;border:2px solid #1a56c4;border-radius:10px;background:#fff;margin-bottom:8px}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting{display:none!important}
+.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #waiting,.box.mini #localPanel{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
 .box.mini #score{font-size:16px;margin-top:6px}
@@ -48,7 +51,19 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<div id="waiting">⏳ Đang chờ cấu hình từ bộ điều khiển...</div>
+<!-- Phần cài đặt tên và chọn màu trực tiếp trên màn hình chính -->
+<div class="n" id="localPanel">
+ <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
+ <div class="lb">Người 1</div>
+ <input id="n1" placeholder="Tên người 1" value="Người 1">
+ <div class="sw" id="sw1"></div>
+ <div class="lb">Người 2</div>
+ <input id="n2" placeholder="Tên người 2" value="Người 2">
+ <div class="sw" id="sw2"></div>
+ <button class="s" id="applyLocal" style="margin-top:8px">💾 Cập nhật nhanh</button>
+</div>
+
+<div id="waiting">⏳ Đang tải cấu hình...</div>
 
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
@@ -318,7 +333,7 @@ cfgRef.on("value", function(snap){
     ev = {
       on: true, over: false, s1: 0, s2: 0,
       t: cfg.ev.t || 5, c1: cfg.ev.c1, c2: cfg.ev.c2,
-      n1: "Người 1", n2: "Người 2",
+      n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
       rig: cfg.ev.rig || 0
     };
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
@@ -326,7 +341,7 @@ cfgRef.on("value", function(snap){
     nEv = {
       on: true, over: false, s1: 0, s2: 0,
       t: cfg.nEv.t || 5, c1: cfg.nEv.c1, c2: cfg.nEv.c2,
-      n1: "Người 1", n2: "Người 2"
+      n1: cfg.nEv.n1 || "Người 1", n2: cfg.nEv.n2 || "Người 2"
     };
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
@@ -335,6 +350,38 @@ cfgRef.on("value", function(snap){
   }
   show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
   banner("Đã nhận cấu hình mới!");
+});
+
+var localSel1=4, localSel2=2;
+function swatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);});
+    el.appendChild(b);bs.push(b);
+  });
+}
+swatches("sw1",localSel1,function(i){localSel1=i;});
+swatches("sw2",localSel2,function(i){localSel2=i;});
+
+tap($("applyLocal"),function(){
+  if(localSel1===localSel2){banner("Hai người phải chọn màu khác nhau!");return;}
+  var cfg={
+    mode:"e",
+    configId:Date.now(),
+    ev:{
+      t:5,
+      c1:localSel1,
+      c2:localSel2,
+      n1:$("n1").value.trim()||"Người 1",
+      n2:$("n2").value.trim()||"Người 2",
+      rig:0
+    }
+  };
+  cfgRef.set(cfg);
+  banner("Đã lưu và áp dụng cấu hình!");
 });
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
