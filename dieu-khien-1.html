@@ -72,6 +72,8 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
  <div class="lb" style="margin-top:6px">Người chơi (chỉ lắc 1 xúc xắc, cho phép trùng màu)</div>
  <div id="qrows"></div>
  <button class="s" id="qadd">+ Thêm người</button>
+ <div class="lb" style="margin-top:10px">🎯 Ép màu tiếp theo (Không chọn = Ngẫu nhiên)</div>
+ <div class="sw" id="qNextSw"></div>
 </div>
 
 </div>
@@ -109,8 +111,9 @@ db.ref(".info/connected").on("value",function(s){
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1; // Cấu hình mặc định cho bảng đếm Roll thường
+var nTgt=5, nSel1=0, nSel2=1; 
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
+var qNextColor = null; // Biến lưu màu tiếp theo cho Event nhiều người
 var $=function(i){return document.getElementById(i);};
 
 function tap(el,fn){
@@ -138,6 +141,29 @@ function swatches(id,start,cb){
     el.appendChild(b);bs.push(b);
   });
 }
+
+// Hàm chọn màu tiếp theo (có thể bấm lần nữa để bỏ chọn)
+function qNextSwatches(id,start,cb){
+  var el=$(id),bs=[];el.innerHTML="";
+  C.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.style.background=c;b.setAttribute("aria-label",CS[i]);
+    b.textContent=(i===start)?"✓":"";
+    tap(b,function(){
+      if(qNextColor===i){
+        qNextColor=null;
+        b.textContent="";
+      }else{
+        bs.forEach(function(x){x.textContent="";});
+        b.textContent="✓";
+        qNextColor=i;
+      }
+      cb(qNextColor);
+    });
+    el.appendChild(b);bs.push(b);
+  });
+}
+
 function banner(t){$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3000);}
 
 /* ---------- ROLL THƯỜNG CÓ BẢNG ĐÉM ---------- */
@@ -180,6 +206,8 @@ tap($("qadd"),function(){
   buildQRows();
 });
 
+qNextSwatches("qNextSw", qNextColor, function(c){ qNextColor=c; });
+
 /* ---------- CHẾ ĐỘ ---------- */
 function setMode(m){
   mode=m;
@@ -211,7 +239,7 @@ tap($("send"),function(){
   } else if(mode==="q"){
     cfg.nd = 1; // Cố định 1 xúc xắc cho chế độ Event nhiều người
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
-    cfg.q={players:players};
+    cfg.q={players:players, nextColor: qNextColor};
   }
   cfgRef.set(cfg);
   banner("Đã gửi cấu hình thành công!");
