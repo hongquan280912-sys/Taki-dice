@@ -51,7 +51,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 <h2>Zalo meo meo</h2>
 
-<!-- Ô nhập tên để trống hoàn toàn -->
+<!-- Ô nhập tên để trống -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu</b></div>
  <div class="lb">Người 1</div>
@@ -115,7 +115,7 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
-var q={on:false,rounds:0,house:0,p:[]};
+var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -316,13 +316,21 @@ function playQ(res){
   q.rounds++;
   var col=res[0];
   var w=q.p.filter(function(p){return p.c===col;});
+  var m="";
   if(w.length){ 
     w.forEach(function(p){p.w++;}); 
-    say(w.map(function(p){return p.n;}).join(" và "));
+    var names = w.map(function(p){return p.n;}).join(" và ");
+    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
+    say(names);
   } else { 
     q.house++; 
+    m = "Nhà cái thắng vòng này";
     say("nhà cái thắng");
   }
+  $("score").style.display="block";
+  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c+'"]'+'">' + esc(p.n) + ': ' + p.w + '</span>'; }).join(" | ");
+  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng số vòng: ' + q.rounds + '</div>';
+  $("msg").textContent = m;
 }
 
 cfgRef.on("value", function(snap){
@@ -355,10 +363,13 @@ cfgRef.on("value", function(snap){
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
   } else if(mode === "q" && cfg.q && cfg.q.players){
     var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
-    q = {on: true, rounds: 0, house: 0, p: p};
+    q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
+    $("score").style.display="block";
+    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
+    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
+    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
-  show(mode === "q" ? [0] : [0,1,2,3,4,5].slice(0, nd));
-  banner("Đã nhận cấu hình mới!");
+  show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
 });
 
 var localSel1=4, localSel2=2;
@@ -423,8 +434,11 @@ function roll(){
   var h=setInterval(function(){
     try{
       t++;
-      if(t<4){var f=[];for(var i=0;i<n;i++)f.push(rndInt(6));show(f);}
-      else{
+      if(t<4){
+        var f=[];
+        for(var i=0;i<n;i++) f.push(rndInt(6));
+        show(f);
+      } else {
         clearInterval(h);
         var res=[];
         if(md==="e" && ev.rig && ev.rig > 0){
@@ -434,7 +448,6 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          // Thuật toán ép thắng tinh vi: Giữ điểm người thua sát nút (tầm 3 hoặc 4 khi người thắng đạt 5) tránh bị nghi ngờ
           var numTarget, numOpp;
           if (oppScore < myScore - 1) {
             numTarget = rndInt(2);
@@ -454,6 +467,12 @@ function roll(){
             }
           }
           res.sort(function(){ return Math.random() - 0.5; });
+        } else if(md==="q") {
+          if(q.nextColor !== null && q.nextColor !== undefined) {
+            res.push(q.nextColor);
+          } else {
+            res.push(rndInt(6));
+          }
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
