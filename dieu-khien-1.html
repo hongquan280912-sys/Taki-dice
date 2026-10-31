@@ -35,6 +35,13 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <div class="box">
 <h2>🎮 Điều khiển — Taki Dice</h2>
 <div class="sub">Chọn chế độ, tên, màu trước — màn hình chính sẽ tự lắc xúc xắc.</div>
+
+<!-- Chọn phòng riêng -->
+<div class="n" id="roomPanel">
+ <div class="lb"><b>Tên phòng hiện tại:</b></div>
+ <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
+</div>
+
 <div id="conn">Đang kết nối...</div>
 
 <div class="seg" id="modeSeg"></div>
@@ -87,6 +94,15 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:14px;background:#
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
+var currentRoom = "taki_room6";
+try {
+  var urlParams = new URLSearchParams(window.location.search);
+  var roomParam = urlParams.get('room');
+  if (roomParam) {
+    currentRoom = roomParam;
+  }
+} catch(e) {}
+
 var firebaseConfig = {
   apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
   authDomain: "taki-4b68b.firebaseapp.com",
@@ -99,8 +115,14 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
-var ROOM = "taki_room6";
-var cfgRef = db.ref(ROOM + "/config");
+
+function getCfgRef() {
+  return db.ref(currentRoom + "/config");
+}
+
+if (document.getElementById("roomInput")) {
+  document.getElementById("roomInput").value = currentRoom;
+}
 
 var connEl=document.getElementById("conn");
 db.ref(".info/connected").on("value",function(s){
@@ -110,8 +132,8 @@ db.ref(".info/connected").on("value",function(s){
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
-var mode="n",nd=4,tgt=5,sel1=4,sel2=2,rigVal=0;
-var nTgt=5, nSel1=0, nSel2=1; 
+var mode="n",nd=4,tgt=5,sel1=0,sel2=4,rigVal=0;
+var nTgt=5, nSel1=0, nSel2=4; 
 var qp=[{n:"",c:0},{n:"",c:2},{n:"",c:4},{n:"",c:3}];
 var qNextColor = null; 
 var $=function(i){return document.getElementById(i);};
@@ -219,6 +241,13 @@ seg("modeSeg",["Roll thường","Event 2 người","Event nhiều người"],0,f
 seg("ndSeg",["1","2","3","4","5","6"],nd-1,function(i){nd=i+1;});
 setMode("n");
 
+if ($("roomInput")) {
+  $("roomInput").addEventListener("change", function(){
+    currentRoom = this.value.trim() || "taki_room6";
+    banner("Đã chuyển sang phòng: " + currentRoom);
+  });
+}
+
 /* ---------- GỬI CẤU HÌNH ---------- */
 var configId=Date.now();
 tap($("send"),function(){
@@ -236,11 +265,11 @@ tap($("send"),function(){
       n2:$("n2").value.trim()||"Người 2",
       rig: rigVal};
   } else if(mode==="q"){
-    cfg.nd = 1; // Cố định 1 xúc xắc cho chế độ Event nhiều người
+    cfg.nd = 1; 
     var players=qp.map(function(p,i){return {n:p.n.trim()||("Người "+(i+1)),c:p.c};});
-    cfg.q={players:players, nextColor: qNextColor}; // Truyền thêm nextColor lên Firebase
+    cfg.q={players:players, nextColor: qNextColor}; 
   }
-  cfgRef.set(cfg);
+  getCfgRef().set(cfg);
   banner("Đã gửi cấu hình thành công!");
 });
 </script>
