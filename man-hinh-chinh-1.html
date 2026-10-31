@@ -89,8 +89,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json"; 
-// Mẹo chống xung đột: Nếu bạn đưa bạn bè dùng chung link riêng, hãy đổi 'taki_room6' ở trên thành tên phòng khác (ví dụ: 'taki_room_ban_A')
+// Bạn có thể đổi tên phòng (ví dụ:taki_room_cua_ban) tại đây để tránh xung đột với người khác:
+var DB_URL = "https://taki-4b68b-default-rtdb.firebaseio.com/taki_room6/config.json";
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -98,7 +98,6 @@ var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
 var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
-var q={on:false,rounds:0,house:0,p:[],nextColor:null};
 var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
@@ -297,41 +296,20 @@ function playNormalEvent(res){
   scoreboard(m, true);
 }
 
-function playQ(res){
-  q.rounds++;
-  var col=res[0];
-  var w=q.p.filter(function(p){return p.c===col;});
-  var m="";
-  if(w.length){ 
-    w.forEach(function(p){p.w++;}); 
-    var names = w.map(function(p){return p.n;}).join(" và ");
-    m = names + " trúng màu " + CS[col] + " (+1 điểm)";
-    say(names);
-  } else { 
-    q.house++; 
-    m = "Nhà cái thắng vòng này";
-    say("nhà cái thắng");
-  }
-  $("score").style.display="block";
-  var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': '+p.w+'</span>'; }).join(" | ");
-  $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Nhà cái: ' + q.house + ' | Tổng vòng: ' + q.rounds + '</div>';
-  $("msg").textContent = m;
-}
-
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) return;
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
+  if(cfg.configId && cfg.configId === lastConfigId) return;
+  lastConfigId = cfg.configId || 0;
+
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
   $("score").style.display = "none";
-  ev.on = false; nEv.on = false; q.on = false;
-
-  if(cfg.q && cfg.q.nextColor !== undefined) {
-    q.nextColor = cfg.q.nextColor;
-  }
-
-  if(cfg.configId && cfg.configId === lastConfigId) return;
-  lastConfigId = cfg.configId || 0;
+  ev.on = false; nEv.on = false;
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -352,16 +330,8 @@ function handleConfig(cfg){
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
-  } else if(mode === "q" && cfg.q && cfg.q.players){
-    var p = cfg.q.players.map(function(x){ return {n: x.n, c: x.c, w: 0}; });
-    q = {on: true, rounds: 0, house: 0, p: p, nextColor: cfg.q.nextColor !== undefined ? cfg.q.nextColor : null};
-    
-    $("score").style.display="block";
-    var scHtml = q.p.map(function(p){ return '<span style="color:'+C[p.c]+'">'+esc(p.n)+': 0</span>'; }).join(" | ");
-    $("sc").innerHTML = scHtml + '<div style="font-size:13px;font-weight:normal">Chế độ Event nhiều người (1 xúc xắc)</div>';
-    $("msg").textContent = "Bắt đầu! Bấm ROLL để chơi";
   }
-  show(mode === "q" ? [q.nextColor !== null ? q.nextColor : 0] : [0,1,2,3,4,5].slice(0, nd));
+  show([0,1,2,3,4,5].slice(0, nd));
 }
 
 function pollConfig(){
@@ -429,14 +399,13 @@ function roll(){
     if(!ev.on){banner("Chưa có cấu hình!");return;}
     if(ev.over){banner("Đã có người thắng!");return;}
   }
-  if(mode==="q"&&!q.on){banner("Chưa có cấu hình!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
   say("36");
   
-  var md=mode,n=(md==="q")?1:nd,t=0;
+  var md=mode,n=nd,t=0;
   var h=setInterval(function(){
     try{
       t++;
@@ -473,18 +442,6 @@ function roll(){
             }
           }
           res.sort(function(){ return Math.random() - 0.5; });
-        } else if(md==="q") {
-          if(q.nextColor !== null && q.nextColor !== undefined) {
-            res.push(q.nextColor);
-            fetch(DB_URL.replace("config.json", "config/q/nextColor.json"), {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(null)
-            }).catch(function(){});
-            q.nextColor = null;
-          } else {
-            res.push(rndInt(6));
-          }
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
@@ -497,7 +454,6 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && q.on)playQ(res);
       }
     }catch(err){
       clearInterval(h);
@@ -508,4 +464,7 @@ function roll(){
 
 tap($("roll"), roll);
 tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+</html>
