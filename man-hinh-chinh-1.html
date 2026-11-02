@@ -476,10 +476,18 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
+          // Nới lỏng khoảng cách điểm, thỉnh thoảng cho người được ép bứt phá hẳn hoặc thắng tự nhiên, tránh kè sát 5-3
           var numTarget, numOpp;
-          if (oppScore < myScore - 1) {
-            numTarget = rndInt(2);
-            numOpp = 1 + rndInt(2);
+          var scoreDiff = myScore - oppScore;
+          
+          if (scoreDiff <= 1) {
+            // Nếu điểm đang sát nhau, tạo khoảng cách an toàn (người ép vượt lên 2-3 điểm)
+            numTarget = 2 + rndInt(2); // 2 hoặc 3 viên
+            numOpp = rndInt(2);       // 0 hoặc 1 viên
+          } else if (scoreDiff >= 3) {
+            // Nếu đã dẫn trước kha khá, cho nhịp trận đấu tự nhiên hơn tránh bị nghi ngờ lộ liễu
+            numTarget = 1 + rndInt(2);
+            numOpp = rndInt(2);
           } else {
             numTarget = 2;
             numOpp = 1;
@@ -511,16 +519,4 @@ function roll(){
         if(md==="n" && nEv.on)playNormalEvent(res);
         if(md==="q" && qCfg.on)playMultiEvent(res);
       }
-    }catch(err){
-      clearInterval(h);
-      busy=false;
-    }
-  },100);
-}
-
-tap($("roll"), roll);
-tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+  
