@@ -94,6 +94,8 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </details>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 var currentRoom = "taki_room6";
 try {
@@ -104,8 +106,21 @@ try {
   }
 } catch(e) {}
 
-function getDBUrl() {
-  return "https://taki-4b68b-default-rtdb.firebaseio.com/" + encodeURIComponent(currentRoom) + "/config.json";
+var firebaseConfig = {
+  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+  authDomain: "taki-4b68b.firebaseapp.com",
+  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+  projectId: "taki-4b68b",
+  storageBucket: "taki-4b68b.firebasestorage.app",
+  messagingSenderId: "943690027603",
+  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+  measurementId: "G-CE9VKNFFX2"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+function getCfgRef() {
+  return db.ref(currentRoom + "/config");
 }
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
@@ -379,18 +394,21 @@ function handleConfig(cfg){
   show([0,1,2,3,4,5].slice(0, nd));
 }
 
-function pollConfig(){
-  fetch(getDBUrl())
-    .then(function(res){ return res.json(); })
-    .then(function(cfg){ handleConfig(cfg); })
-    .catch(function(err){});
+var currentConfigRef = null;
+function listenConfig() {
+  if (currentConfigRef) {
+    currentConfigRef.off();
+  }
+  currentConfigRef = getCfgRef();
+  currentConfigRef.on("value", function(snapshot) {
+    handleConfig(snapshot.val());
+  });
 }
-setInterval(pollConfig, 1000);
-pollConfig();
+listenConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
+  var el=$(id),bs=[];if(!el)return;el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
@@ -417,21 +435,18 @@ function syncLocalConfig(){
     }
   };
   lastConfigId = cfg.configId;
-  fetch(getDBUrl(), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cfg)
-  }).catch(function(e){});
+  getCfgRef().set(cfg).catch(function(e){});
 }
 
-$("n1").addEventListener("input",syncLocalConfig);
-$("n2").addEventListener("input",syncLocalConfig);
+if($("n1")) $("n1").addEventListener("input",syncLocalConfig);
+if($("n2")) $("n2").addEventListener("input",syncLocalConfig);
 
 if ($("roomInput")) {
   $("roomInput").addEventListener("change", function(){
     currentRoom = this.value.trim() || "taki_room6";
     lastConfigId = 0;
-    pollConfig();
+    listenConfig();
+    banner("Đã chuyển sang phòng: " + currentRoom);
   });
 }
 
@@ -476,16 +491,13 @@ function roll(){
           var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
           var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          // Nới lỏng khoảng cách điểm, thỉnh thoảng cho người được ép bứt phá hẳn hoặc thắng tự nhiên, tránh kè sát 5-3
           var numTarget, numOpp;
           var scoreDiff = myScore - oppScore;
           
           if (scoreDiff <= 1) {
-            // Nếu điểm đang sát nhau, tạo khoảng cách an toàn (người ép vượt lên 2-3 điểm)
-            numTarget = 2 + rndInt(2); // 2 hoặc 3 viên
-            numOpp = rndInt(2);       // 0 hoặc 1 viên
+            numTarget = 2 + rndInt(2);
+            numOpp = rndInt(2);
           } else if (scoreDiff >= 3) {
-            // Nếu đã dẫn trước kha khá, cho nhịp trận đấu tự nhiên hơn tránh bị nghi ngờ lộ liễu
             numTarget = 1 + rndInt(2);
             numOpp = rndInt(2);
           } else {
@@ -505,18 +517,10 @@ function roll(){
           res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
           res.push(qCfg.nextColor);
+          while(res.length < n) {
+            res.push(rndInt(6));
+          }
+          res.sort(function(){ return Math.random() - 0.5; });
+          qCfg.nextColor = null; 
         } else {
-          for(var j=0;j<n;j++)res.push(rndInt(6));
-        }
-        
-        show(res);
-        res.forEach(function(c){cnt[c]++;});
-        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
-        rolls.unshift(res);if(rolls.length>20)rolls.pop();
-        stats();
-        busy=false;
-        if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && qCfg.on)playMultiEvent(res);
-      }
-  
+          for(var j=0;j<n;j++)res.pus
