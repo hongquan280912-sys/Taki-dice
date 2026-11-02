@@ -106,23 +106,6 @@ try {
   }
 } catch(e) {}
 
-var firebaseConfig = {
-  apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
-  authDomain: "taki-4b68b.firebaseapp.com",
-  databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
-  projectId: "taki-4b68b",
-  storageBucket: "taki-4b68b.firebasestorage.app",
-  messagingSenderId: "943690027603",
-  appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
-  measurementId: "G-CE9VKNFFX2"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.database();
-
-function getCfgRef() {
-  return db.ref(currentRoom + "/config");
-}
-
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
 var cnt=[0,0,0,0,0,0],rolls=[],fc=0,busy=false;
@@ -145,6 +128,7 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
+// Hiển thị xúc xắc ngay lập tức khi mở trang
 show([0,1,2,3]);
 
 function tap(el,fn){
@@ -349,11 +333,7 @@ function playMultiEvent(res){
 
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) {
-    show([0,1,2,3]);
-    stats();
-    return;
-  }
+  if(!cfg) return;
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
 
@@ -394,17 +374,43 @@ function handleConfig(cfg){
   show([0,1,2,3,4,5].slice(0, nd));
 }
 
-var currentConfigRef = null;
-function listenConfig() {
-  if (currentConfigRef) {
-    currentConfigRef.off();
+// Kết nối Firebase an toàn với bắt lỗi
+try {
+  var firebaseConfig = {
+    apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
+    authDomain: "taki-4b68b.firebaseapp.com",
+    databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
+    projectId: "taki-4b68b",
+    storageBucket: "taki-4b68b.firebasestorage.app",
+    messagingSenderId: "943690027603",
+    appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
+    measurementId: "G-CE9VKNFFX2"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.database();
+
+  function getCfgRef() {
+    return db.ref(currentRoom + "/config");
   }
-  currentConfigRef = getCfgRef();
-  currentConfigRef.on("value", function(snapshot) {
-    handleConfig(snapshot.val());
-  });
+
+  function listenConfig() {
+    getCfgRef().on("value", function(snapshot) {
+      handleConfig(snapshot.val());
+    });
+  }
+  listenConfig();
+
+  if ($("roomInput")) {
+    $("roomInput").addEventListener("change", function(){
+      currentRoom = this.value.trim() || "taki_room6";
+      lastConfigId = 0;
+      listenConfig();
+      banner("Đã chuyển sang phòng: " + currentRoom);
+    });
+  }
+} catch(e) {
+  console.log("Firebase offline mode");
 }
-listenConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
@@ -422,33 +428,26 @@ swatches("sw2",localSel2,function(i){localSel2=i;});
 
 function syncLocalConfig(){
   if(localSel1===localSel2)return;
-  var cfg={
-    mode:"e",
-    configId:Date.now(),
-    ev:{
-      t:5,
-      c1:localSel1,
-      c2:localSel2,
-      n1:$("n1").value.trim()||"Người 1",
-      n2:$("n2").value.trim()||"Người 2",
-      rig:0
-    }
-  };
-  lastConfigId = cfg.configId;
-  getCfgRef().set(cfg).catch(function(e){});
+  try {
+    var cfg={
+      mode:"e",
+      configId:Date.now(),
+      ev:{
+        t:5,
+        c1:localSel1,
+        c2:localSel2,
+        n1:$("n1").value.trim()||"Người 1",
+        n2:$("n2").value.trim()||"Người 2",
+        rig:0
+      }
+    };
+    lastConfigId = cfg.configId;
+    getCfgRef().set(cfg);
+  } catch(e){}
 }
 
 if($("n1")) $("n1").addEventListener("input",syncLocalConfig);
 if($("n2")) $("n2").addEventListener("input",syncLocalConfig);
-
-if ($("roomInput")) {
-  $("roomInput").addEventListener("change", function(){
-    currentRoom = this.value.trim() || "taki_room6";
-    lastConfigId = 0;
-    listenConfig();
-    banner("Đã chuyển sang phòng: " + currentRoom);
-  });
-}
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
@@ -521,6 +520,4 @@ function roll(){
             res.push(rndInt(6));
           }
           res.sort(function(){ return Math.random() - 0.5; });
-          qCfg.nextColor = null; 
-        } else {
-          for(var j=0;j<n;j++)res.pus
+          qCfg.nextColo
