@@ -56,7 +56,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
 </div>
 
-<!-- Cấu hình đặt tên & chọn màu (Event 2 người) có thêm chỉnh mức chạm điểm 1-10 -->
+<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Mức chạm điểm thắng (1 đến 10)</div>
@@ -465,7 +465,7 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // Phát tiếng sủa gâu gâu thay cho đọc số 36
+  // Phát âm thanh sủa gâu gâu
   say("Gâu gâu gâu gâu!");
   
   var md=mode,n=nd,t=0;
@@ -479,11 +479,6 @@ function roll(){
       } else {
         clearInterval(h);
         var res=[];
-        
-        // 100% quay xúc xắc ngẫu nhiên tự nhiên cho tất cả các viên
-        for(var j=0;j<n;j++) res.push(rndInt(6));
-
-        // Nếu bật chế độ ép thắng: tinh chỉnh ngầm ẩn sao cho người được ép có xác suất thắng ván đó cao hơn một cách mượt mà, hoàn toàn không lộ số viên cố định
         if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
@@ -512,8 +507,16 @@ function roll(){
           res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
           res[0] = qCfg.nextColor;
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
         }
         
         show(res);
         res.forEach(function(c){cnt[c]++;});
-        if(n===4&&res.filter(function(c,i)
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(rolls.length>20)rolls.pop();
+        stats();
+        busy=false;
+        if(md==="e")playEvent(res);
+        if(md==="n" && nEv.on)playNormalEvent(res);
+        if(md==="q" && qCfg.on)playMultiEv
