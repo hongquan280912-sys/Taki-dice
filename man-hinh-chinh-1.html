@@ -94,8 +94,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </details>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 var currentRoom = "taki_room6";
 try {
@@ -105,6 +103,10 @@ try {
     currentRoom = roomParam;
   }
 } catch(e) {}
+
+function getDBUrl() {
+  return "https://taki-4b68b-default-rtdb.firebaseio.com/" + encodeURIComponent(currentRoom) + "/config.json";
+}
 
 var C=["#ff0000","#ffa500","#ffd700","#008000","#0000ff","#800080"];
 var CS=["đỏ","cam","vàng","xanh lá","xanh dương","tím"];
@@ -128,7 +130,6 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
-// Hiển thị xúc xắc ngay lập tức khi mở trang
 show([0,1,2,3]);
 
 function tap(el,fn){
@@ -333,7 +334,11 @@ function playMultiEvent(res){
 
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) return;
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
 
@@ -374,47 +379,18 @@ function handleConfig(cfg){
   show([0,1,2,3,4,5].slice(0, nd));
 }
 
-// Kết nối Firebase an toàn với bắt lỗi
-try {
-  var firebaseConfig = {
-    apiKey: "AIzaSyCpvim3K2_FNPkxjSwonmZv1aRDnc_Su7g",
-    authDomain: "taki-4b68b.firebaseapp.com",
-    databaseURL: "https://taki-4b68b-default-rtdb.firebaseio.com",
-    projectId: "taki-4b68b",
-    storageBucket: "taki-4b68b.firebasestorage.app",
-    messagingSenderId: "943690027603",
-    appId: "1:943690027603:web:94a76dd75d313a8bc26ca6",
-    measurementId: "G-CE9VKNFFX2"
-  };
-  firebase.initializeApp(firebaseConfig);
-  var db = firebase.database();
-
-  function getCfgRef() {
-    return db.ref(currentRoom + "/config");
-  }
-
-  function listenConfig() {
-    getCfgRef().on("value", function(snapshot) {
-      handleConfig(snapshot.val());
-    });
-  }
-  listenConfig();
-
-  if ($("roomInput")) {
-    $("roomInput").addEventListener("change", function(){
-      currentRoom = this.value.trim() || "taki_room6";
-      lastConfigId = 0;
-      listenConfig();
-      banner("Đã chuyển sang phòng: " + currentRoom);
-    });
-  }
-} catch(e) {
-  console.log("Firebase offline mode");
+function pollConfig(){
+  fetch(getDBUrl())
+    .then(function(res){ return res.json(); })
+    .then(function(cfg){ handleConfig(cfg); })
+    .catch(function(err){});
 }
+setInterval(pollConfig, 1000);
+pollConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
-  var el=$(id),bs=[];if(!el)return;el.innerHTML="";
+  var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
@@ -428,26 +404,36 @@ swatches("sw2",localSel2,function(i){localSel2=i;});
 
 function syncLocalConfig(){
   if(localSel1===localSel2)return;
-  try {
-    var cfg={
-      mode:"e",
-      configId:Date.now(),
-      ev:{
-        t:5,
-        c1:localSel1,
-        c2:localSel2,
-        n1:$("n1").value.trim()||"Người 1",
-        n2:$("n2").value.trim()||"Người 2",
-        rig:0
-      }
-    };
-    lastConfigId = cfg.configId;
-    getCfgRef().set(cfg);
-  } catch(e){}
+  var cfg={
+    mode:"e",
+    configId:Date.now(),
+    ev:{
+      t:5,
+      c1:localSel1,
+      c2:localSel2,
+      n1:$("n1").value.trim()||"Người 1",
+      n2:$("n2").value.trim()||"Người 2",
+      rig:0
+    }
+  };
+  lastConfigId = cfg.configId;
+  fetch(getDBUrl(), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cfg)
+  }).catch(function(e){});
 }
 
-if($("n1")) $("n1").addEventListener("input",syncLocalConfig);
-if($("n2")) $("n2").addEventListener("input",syncLocalConfig);
+$("n1").addEventListener("input",syncLocalConfig);
+$("n2").addEventListener("input",syncLocalConfig);
+
+if ($("roomInput")) {
+  $("roomInput").addEventListener("change", function(){
+    currentRoom = this.value.trim() || "taki_room6";
+    lastConfigId = 0;
+    pollConfig();
+  });
+}
 
 var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
 function rndInt(n){
@@ -487,22 +473,9 @@ function roll(){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-          
-          var numTarget, numOpp;
-          var scoreDiff = myScore - oppScore;
-          
-          if (scoreDiff <= 1) {
-            numTarget = 2 + rndInt(2);
-            numOpp = rndInt(2);
-          } else if (scoreDiff >= 3) {
-            numTarget = 1 + rndInt(2);
-            numOpp = rndInt(2);
-          } else {
-            numTarget = 2;
-            numOpp = 1;
-          }
+          // Nới lỏng khoảng cách biệt, thay vì bám sát 5-3 thì tạo nhịp cách biệt tự nhiên hơn
+          var numTarget = 2 + rndInt(2); // Người được ép luôn nhỉnh hơn (2-3 viên)
+          var numOpp = rndInt(2);       // Đối thủ thấp hơn (0-1 viên)
           
           for(var k=0; k<numTarget; k++) res.push(targetColor);
           for(var k=0; k<numOpp; k++) res.push(oppColor);
@@ -516,8 +489,30 @@ function roll(){
           res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
           res.push(qCfg.nextColor);
-          while(res.length < n) {
-            res.push(rndInt(6));
-          }
-          res.sort(function(){ return Math.random() - 0.5; });
-          qCfg.nextColo
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        
+        show(res);
+        res.forEach(function(c){cnt[c]++;});
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(rolls.length>20)rolls.pop();
+        stats();
+        busy=false;
+        if(md==="e")playEvent(res);
+        if(md==="n" && nEv.on)playNormalEvent(res);
+        if(md==="q" && qCfg.on)playMultiEvent(res);
+      }
+    }catch(err){
+      clearInterval(h);
+      busy=false;
+    }
+  },100);
+}
+
+tap($("roll"), roll);
+tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+</html>
