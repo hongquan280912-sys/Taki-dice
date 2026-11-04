@@ -132,7 +132,6 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
-show([0,1,2,3]);
 
 function tap(el,fn){
   var last=0;
@@ -379,6 +378,7 @@ function handleConfig(cfg){
     $("sc").textContent = "Chế độ Event nhiều người";
     $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
+  show([0,1,2,3,4,5].slice(0, nd));
 }
 
 function pollConfig(){
@@ -519,5 +519,4 @@ function roll(){
         if(md==="q" && qCfg.on)playMultiEvent(res);
       }
     }catch(err){
-      clearInterval(h);
-      busy=fal
+      clearInterval
