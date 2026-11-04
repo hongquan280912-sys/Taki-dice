@@ -117,7 +117,6 @@ var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
 var qCfg={on:false, nextColor:null, players:[]};
-var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
 if ($("roomInput")) {
@@ -125,6 +124,8 @@ if ($("roomInput")) {
 }
 
 function show(res){
+  var box = document.getElementById("dice");
+  if(!box) return;
   box.innerHTML="";
   if(!res || !res.length) res = [0,1,2,3];
   res.forEach(function(c){
@@ -264,7 +265,6 @@ function scoreboard(msg, isNormal){
     ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
   $("msg").textContent=msg||"";
   
-  // Nếu đã có người thắng, ẩn nút Roll và hiện nút Reset
   if(activeEv.over){
     $("roll").style.display = "none";
     $("resetBtn").style.display = "block";
@@ -526,4 +526,7 @@ function roll(){
 
 tap($("roll"), roll);
 tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), functi
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+<
