@@ -13,6 +13,7 @@ h2{color:#fff;margin:0 0 10px;font-size:30px;text-shadow:0 2px 4px #0a3d91}
 button{width:100%;min-height:52px;padding:14px;font-size:22px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 button:active{filter:brightness(.8)}
 button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2a7a4b}
+#resetBtn{display:none;background:#d9534f;margin-top:8px;}
 #tb{display:flex;gap:6px;justify-content:flex-end;margin-bottom:6px;align-items:center}
 #tb .r{display:flex;gap:6px}
 #tb button{width:auto;min-height:38px;padding:4px 10px;font-size:14px;background:rgba(0,0,0,.35);border:2px solid #fff;border-radius:8px}
@@ -72,6 +73,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="dice"></div>
 <div id="ban"></div>
 <button id="roll">ROLL AGAIN !</button>
+<button id="resetBtn">🔄 CHƠI LẠI (RESET VÁN MỚI)</button>
 <button class="s" id="tv">🔊 Thử giọng nói</button>
 <div id="vs"></div>
 
@@ -261,7 +263,29 @@ function scoreboard(msg, isNormal){
   $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
     ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
   $("msg").textContent=msg||"";
+  
+  // Nếu đã có người thắng, ẩn nút Roll và hiện nút Reset
+  if(activeEv.over){
+    $("roll").style.display = "none";
+    $("resetBtn").style.display = "block";
+  } else {
+    $("roll").style.display = "block";
+    $("resetBtn").style.display = "none";
+  }
 }
+
+function resetGame(){
+  if(mode === "e"){
+    ev.s1 = 0; ev.s2 = 0; ev.over = false;
+    scoreboard("Đã reset ván mới! Bắt đầu Roll");
+  } else if(mode === "n" && nEv.on){
+    nEv.s1 = 0; nEv.s2 = 0; nEv.over = false;
+    scoreboard("Đã reset ván mới! Bắt đầu Roll", true);
+  }
+  $("roll").style.display = "block";
+  $("resetBtn").style.display = "none";
+}
+tap($("resetBtn"), resetGame);
 
 function playEvent(res){
   var a = res.filter(function(c){ return c === ev.c1; }).length; 
@@ -334,11 +358,7 @@ function playMultiEvent(res){
 
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) {
-    show([0,1,2,3]);
-    stats();
-    return;
-  }
+  if(!cfg) return;
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
 
@@ -346,6 +366,8 @@ function handleConfig(cfg){
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; nEv.on = false; qCfg.on = false;
+  $("roll").style.display = "block";
+  $("resetBtn").style.display = "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -448,10 +470,7 @@ function rndInt(n){
 function roll(){
   if(busy)return;
   if(mode==="n" && nEv.on && nEv.over){banner("Đã có người thắng!");return;}
-  if(mode==="e"){
-    if(!ev.on){banner("Chưa có cấu hình!");return;}
-    if(ev.over){banner("Đã có người thắng!");return;}
-  }
+  if(mode==="e" && ev.over){banner("Đã có người thắng!");return;}
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
@@ -470,10 +489,8 @@ function roll(){
         clearInterval(h);
         var res=[];
         
-        // 100% quay xúc xắc ngẫu nhiên tự nhiên cho tất cả các viên
         for(var j=0;j<n;j++) res.push(rndInt(6));
 
-        // Nếu bật chế độ ép thắng: tinh chỉnh ngầm ẩn sao cho người được ép có xác suất thắng ván đó cao hơn một cách mượt mà, hoàn toàn không lộ số viên cố định
         if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
@@ -482,7 +499,6 @@ function roll(){
           var b = res.filter(function(c){ return c === oppColor; }).length;
           
           var luck = rndInt(100);
-          // 65% xác suất nếu ván đó ngẫu nhiên không có lợi cho người được ép, hệ thống sẽ âm thầm đổi 1 viên bất kỳ thành màu của người được ép để đảm bảo tiến độ
           if (luck < 65 && a <= b) {
             var idx = rndInt(res.length);
             res[idx] = targetColor;
@@ -510,7 +526,4 @@ function roll(){
 
 tap($("roll"), roll);
 tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+tap($("rs"), functi
