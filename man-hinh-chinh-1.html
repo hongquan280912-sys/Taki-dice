@@ -346,7 +346,6 @@ function handleConfig(cfg){
 
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
-  $("score").style.display = "none";
   ev.on = false; nEv.on = false; qCfg.on = false;
 
   if(mode === "e" && cfg.ev){
@@ -380,7 +379,6 @@ function handleConfig(cfg){
     $("sc").textContent = "Chế độ Event nhiều người";
     $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
-  show([0,1,2,3,4,5].slice(0, nd));
 }
 
 function pollConfig(){
@@ -438,7 +436,7 @@ if($("targetScoreInput")) {
 
 if ($("roomInput")) {
   $("roomInput").addEventListener("change", function(){
-    currentRoom = this.value.trim() || "taki_room6";
+    currentRoom = this.value.trim()|| "taki_room6";
     lastConfigId = 0;
     pollConfig();
   });
@@ -465,7 +463,6 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // Phát âm thanh gâu gâu
   say("Gâu gâu gâu gâu!");
   
   var md=mode,n=nd,t=0;
@@ -519,4 +516,8 @@ function roll(){
         busy=false;
         if(md==="e")playEvent(res);
         if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md=
+        if(md==="q" && qCfg.on)playMultiEvent(res);
+      }
+    }catch(err){
+      clearInterval(h);
+      busy=fal
