@@ -473,9 +473,23 @@ function roll(){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // Logic tiến điểm tiến triển đều đặn, luôn có người ghi điểm sau mỗi ván, rượt đuổi kịch tính không bao giờ đứng điểm
-          var numTarget = 2;
-          var numOpp = 1;
+          // Logic ngẫu nhiên ẩn (weighted random tinh tế): Không bao giờ lộ, số lượng viên ra biến đổi linh hoạt
+          var numTarget, numOpp;
+          var luck = rndInt(100);
+          
+          if (luck < 45) {
+            // 45% ván: Người được ép nhỉnh hơn 1 viên (thắng nhẹ)
+            numTarget = 2; numOpp = 1;
+          } else if (luck < 70) {
+            // 25% ván: Người được ép ra 1 viên, đối thủ 0 viên (tích lũy từ từ)
+            numTarget = 1; numOpp = 0;
+          } else if (luck < 85) {
+            // 15% ván: Hòa (để lịch sử xúc xắc nhìn chân thực, không bị nghi ngờ)
+            numTarget = 1; numOpp = 1;
+          } else {
+            // 15% ván: Nhường điểm cho đối thủ gỡ nhẹ để tạo cảm giác game công bằng, kịch tính
+            numTarget = 0; numOpp = 1;
+          }
           
           for(var k=0; k<numTarget; k++) res.push(targetColor);
           for(var k=0; k<numOpp; k++) res.push(oppColor);
@@ -506,13 +520,4 @@ function roll(){
     }catch(err){
       clearInterval(h);
       busy=false;
-    }
-  },100);
-}
-
-tap($("roll"), roll);
-tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+ 
