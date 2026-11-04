@@ -473,9 +473,22 @@ function roll(){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // Nới lỏng khoảng cách biệt, thay vì bám sát 5-3 thì tạo nhịp cách biệt tự nhiên hơn
-          var numTarget = 2 + rndInt(2); // Người được ép luôn nhỉnh hơn (2-3 viên)
-          var numOpp = rndInt(2);       // Đối thủ thấp hơn (0-1 viên)
+          // Điều chỉnh tỷ lệ tự nhiên: Tránh áp đảo 5-0, có lúc thắng sát nút hoặc nhường điểm nhẹ cho đối thủ
+          var numTarget, numOpp;
+          var randChance = rndInt(10);
+          if (randChance < 7) { 
+            // 70% số ván: Người được ép nhỉnh hơn 1 điểm (giằng co, tự nhiên)
+            numTarget = 1 + rndInt(2); // 1 hoặc 2 viên
+            numOpp = rndInt(2);       // 0 hoặc 1 viên
+          } else if (randChance < 9) {
+            // 20% số ván: Hòa hoặc đối thủ gỡ điểm để giữ chân
+            numTarget = 1;
+            numOpp = 1;
+          } else {
+            // 10% số ván: Bứt phá rõ rệt
+            numTarget = 2;
+            numOpp = 0;
+          }
           
           for(var k=0; k<numTarget; k++) res.push(targetColor);
           for(var k=0; k<numOpp; k++) res.push(oppColor);
@@ -512,7 +525,4 @@ function roll(){
 
 tap($("roll"), roll);
 tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-</html>
+tap($("rs")
