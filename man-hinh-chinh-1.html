@@ -473,20 +473,9 @@ function roll(){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // Logic tiến điểm cân đối, tự nhiên, không bao giờ 5-0 ngay lập tức, bám đuổi kịch tính
-          var numTarget, numOpp;
-          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
-          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
-          
-          if (myScore > oppScore + 1) {
-            // Nếu dẫn trước xa, cho ván này hòa hoặc đối thủ gỡ nhẹ để giằng co
-            numTarget = 1;
-            numOpp = 1;
-          } else {
-            // Tiến lên từng bước tự nhiên (+1 điểm mỗi lượt rượt đuổi)
-            numTarget = 2;
-            numOpp = 1;
-          }
+          // Logic tiến điểm tiến triển đều đặn, luôn có người ghi điểm sau mỗi ván, rượt đuổi kịch tính không bao giờ đứng điểm
+          var numTarget = 2;
+          var numOpp = 1;
           
           for(var k=0; k<numTarget; k++) res.push(targetColor);
           for(var k=0; k<numOpp; k++) res.push(oppColor);
