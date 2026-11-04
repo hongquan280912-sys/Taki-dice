@@ -123,6 +123,7 @@ if ($("roomInput")) {
   $("roomInput").value = currentRoom;
 }
 
+// Hàm vẽ xúc xắc chống mất hiển thị
 function show(res){
   var box = document.getElementById("dice");
   if(!box) return;
@@ -134,11 +135,10 @@ function show(res){
   });
 }
 
-// Đảm bảo vẽ xúc xắc ngay khi DOM sẵn sàng
+// Vẽ sẵn xúc xắc ngay khi tải trang
 document.addEventListener("DOMContentLoaded", function(){
   show([0,1,2,3]);
 });
-// Dự phòng gọi luôn
 show([0,1,2,3]);
 
 function tap(el,fn){
@@ -516,4 +516,4 @@ function roll(){
             var idx = rndInt(res.length);
             res[idx] = targetColor;
           }
-        } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qC
+        } else if(md==="q" && qCfg.on && qCfg.nextColor !== n
