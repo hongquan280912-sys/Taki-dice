@@ -56,7 +56,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
 </div>
 
-<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
+<!-- Cấu hình đặt tên & chọn màu (Event 2 người) có thêm chỉnh mức chạm điểm 1-10 -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
  <div class="lb">Mức chạm điểm thắng (1 đến 10)</div>
@@ -132,6 +132,7 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
+// Hiển thị sẵn 4 cục xúc xắc ngay khi mở trang
 show([0,1,2,3]);
 
 function tap(el,fn){
@@ -465,7 +466,7 @@ function roll(){
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  // Phát âm thanh sủa gâu gâu
+  // Phát âm thanh gâu gâu
   say("Gâu gâu gâu gâu!");
   
   var md=mode,n=nd,t=0;
@@ -518,5 +519,4 @@ function roll(){
         stats();
         busy=false;
         if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && qCfg.on)playMultiEv
+        if(md==="
