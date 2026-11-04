@@ -133,9 +133,16 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
+
+// Đảm bảo vẽ xúc xắc ngay khi DOM sẵn sàng
+document.addEventListener("DOMContentLoaded", function(){
+  show([0,1,2,3]);
+});
+// Dự phòng gọi luôn
 show([0,1,2,3]);
 
 function tap(el,fn){
+  if(!el)return;
   var last=0;
   function h(e){
     var now=Date.now();
@@ -157,6 +164,7 @@ try{
 }catch(e){}
 function applyView(){
   var b=document.querySelector(".box"),z=ZS[zi];
+  if(!b)return;
   b.style.zoom=z;
   b.style.width=(100/z)+"%";
   b.className=mini?"box mini":"box";
@@ -167,8 +175,8 @@ tap($("zm"),function(){if(zi>0){zi--;applyView();}});
 tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
 tap($("mn"),function(){mini=!mini;applyView();});
 
-function vstat(t){$("vs").textContent=t;}
-function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
+function vstat(t){if($("vs"))$("vs").textContent=t;}
+function banner(t){if(!$("ban"))return;$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3500);}
 
 var voices=[];
 var ae=new Audio();ae.preload="auto";
@@ -237,40 +245,43 @@ function sProcess(){
 function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
 function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
 function stats(){
-  $("st").innerHTML=row(cnt);
+  if($("st")) $("st").innerHTML=row(cnt);
   var c20=[0,0,0,0,0,0];
   rolls.forEach(function(r){r.forEach(function(c){c20[c]++;});});
-  $("st20").innerHTML=row(c20);
-  $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
+  if($("st20")) $("st20").innerHTML=row(c20);
+  if($("fc")) $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
   var h="";
   rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
-  $("hist").innerHTML=h;
+  if($("hist")) $("hist").innerHTML=h;
 }
 function esc(s){return (s||"").replace(/[&<>]/g,"");}
 
-$("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
+if($("rng")) $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
 tap($("t1k"),function(){
   var c=[0,0,0,0,0,0],i;
   for(i=0;i<4000;i++)c[rndInt(6)]++;
-  $("t1r").style.display="block";
-  $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
+  if($("t1r")){
+    $("t1r").style.display="block";
+    $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
+  }
 });
 
 function scoreboard(msg, isNormal){
+  if(!$("score"))return;
   $("score").style.display="block";
   var activeEv = isNormal ? nEv : ev;
-  var name1 = $("n1").value.trim() || activeEv.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || activeEv.n2 || "Người 2";
-  $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
+  var name1 = ($("n1") && $("n1").value.trim()) || activeEv.n1 || "Người 1";
+  var name2 = ($("n2") && $("n2").value.trim()) || activeEv.n2 || "Người 2";
+  if($("sc")) $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
     ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
-  $("msg").textContent=msg||"";
+  if($("msg")) $("msg").textContent=msg||"";
   
   if(activeEv.over){
-    $("roll").style.display = "none";
-    $("resetBtn").style.display = "block";
+    if($("roll")) $("roll").style.display = "none";
+    if($("resetBtn")) $("resetBtn").style.display = "block";
   } else {
-    $("roll").style.display = "block";
-    $("resetBtn").style.display = "none";
+    if($("roll")) $("roll").style.display = "block";
+    if($("resetBtn")) $("resetBtn").style.display = "none";
   }
 }
 
@@ -282,16 +293,16 @@ function resetGame(){
     nEv.s1 = 0; nEv.s2 = 0; nEv.over = false;
     scoreboard("Đã reset ván mới! Bắt đầu Roll", true);
   }
-  $("roll").style.display = "block";
-  $("resetBtn").style.display = "none";
+  if($("roll")) $("roll").style.display = "block";
+  if($("resetBtn")) $("resetBtn").style.display = "none";
 }
 tap($("resetBtn"), resetGame);
 
 function playEvent(res){
   var a = res.filter(function(c){ return c === ev.c1; }).length; 
   var b = res.filter(function(c){ return c === ev.c2; }).length; 
-  var name1 = $("n1").value.trim() || ev.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || ev.n2 || "Người 2";
+  var name1 = ($("n1") && $("n1").value.trim()) || ev.n1 || "Người 1";
+  var name2 = ($("n2") && $("n2").value.trim()) || ev.n2 || "Người 2";
   var m = "";
   
   if(a > b){
@@ -317,8 +328,8 @@ function playEvent(res){
 function playNormalEvent(res){
   var a = res.filter(function(c){ return c === nEv.c1; }).length;
   var b = res.filter(function(c){ return c === nEv.c2; }).length;
-  var name1 = $("n1").value.trim() || nEv.n1 || "Người 1";
-  var name2 = $("n2").value.trim() || nEv.n2 || "Người 2";
+  var name1 = ($("n1") && $("n1").value.trim()) || nEv.n1 || "Người 1";
+  var name2 = ($("n2") && $("n2").value.trim()) || nEv.n2 || "Người 2";
   var m = "";
   
   if(a > b){
@@ -351,9 +362,9 @@ function playMultiEvent(res){
   } else {
     m += " — Không ai trúng màu này";
   }
-  $("score").style.display = "block";
-  $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
-  $("msg").textContent = m;
+  if($("score")) $("score").style.display = "block";
+  if($("sc")) $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
+  if($("msg")) $("msg").textContent = m;
 }
 
 var lastConfigId = 0;
@@ -364,10 +375,10 @@ function handleConfig(cfg){
 
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
-  $("score").style.display = "none";
+  if($("score")) $("score").style.display = "none";
   ev.on = false; nEv.on = false; qCfg.on = false;
-  $("roll").style.display = "block";
-  $("resetBtn").style.display = "none";
+  if($("roll")) $("roll").style.display = "block";
+  if($("resetBtn")) $("resetBtn").style.display = "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -394,9 +405,9 @@ function handleConfig(cfg){
       nextColor: (cfg.q.nextColor !== undefined ? cfg.q.nextColor : null),
       players: cfg.q.players || []
     };
-    $("score").style.display = "block";
-    $("sc").textContent = "Chế độ Event nhiều người";
-    $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
+    if($("score")) $("score").style.display = "block";
+    if($("sc")) $("sc").textContent = "Chế độ Event nhiều người";
+    if($("msg")) $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
   show([0,1,2,3,4,5].slice(0, nd));
 }
@@ -412,7 +423,9 @@ pollConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
+  var el=$(id);
+  if(!el)return;
+  var bs=[];el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
@@ -433,8 +446,8 @@ function syncLocalConfig(){
       t:5,
       c1:localSel1,
       c2:localSel2,
-      n1:$("n1").value.trim()||"Người 1",
-      n2:$("n2").value.trim()||"Người 2",
+      n1:($("n1") && $("n1").value.trim())||"Người 1",
+      n2:($("n2") && $("n2").value.trim())||"Người 2",
       rig:0
     }
   };
@@ -446,8 +459,8 @@ function syncLocalConfig(){
   }).catch(function(e){});
 }
 
-$("n1").addEventListener("input",syncLocalConfig);
-$("n2").addEventListener("input",syncLocalConfig);
+if($("n1")) $("n1").addEventListener("input",syncLocalConfig);
+if($("n2")) $("n2").addEventListener("input",syncLocalConfig);
 
 if ($("roomInput")) {
   $("roomInput").addEventListener("change", function(){
@@ -503,30 +516,4 @@ function roll(){
             var idx = rndInt(res.length);
             res[idx] = targetColor;
           }
-        } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
-          res[0] = qCfg.nextColor;
-        }
-        
-        show(res);
-        res.forEach(function(c){cnt[c]++;});
-        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
-        rolls.unshift(res);if(rolls.length>20)rolls.pop();
-        stats();
-        busy=false;
-        if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && qCfg.on)playMultiEvent(res);
-      }
-    }catch(err){
-      clearInterval(h);
-      busy=false;
-    }
-  },100);
-}
-
-tap($("roll"), roll);
-tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
-tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
-</script>
-</body>
-<
+        } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qC
