@@ -133,6 +133,12 @@ function show(res){
   });
 }
 
+function ensureDice() {
+  if (box && box.children.length === 0) {
+    show([0,1,2,3]);
+  }
+}
+
 function tap(el,fn){
   var last=0;
   function h(e){
@@ -256,6 +262,7 @@ tap($("t1k"),function(){
 
 function scoreboard(msg, isNormal){
   $("score").style.display="block";
+  ensureDice();
   var activeEv = isNormal ? nEv : ev;
   var name1 = $("n1").value.trim() || activeEv.n1 || "Người 1";
   var name2 = $("n2").value.trim() || activeEv.n2 || "Người 2";
@@ -329,6 +336,7 @@ function playMultiEvent(res){
     m += " — Không ai trúng màu này";
   }
   $("score").style.display = "block";
+  ensureDice();
   $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
   $("msg").textContent = m;
 }
@@ -375,10 +383,11 @@ function handleConfig(cfg){
       players: cfg.q.players || []
     };
     $("score").style.display = "block";
+    ensureDice();
     $("sc").textContent = "Chế độ Event nhiều người";
     $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
-  show([0,1,2,3,4,5].slice(0, nd));
+  ensureDice();
 }
 
 function pollConfig(){
@@ -515,8 +524,4 @@ function roll(){
         stats();
         busy=false;
         if(md==="e")playEvent(res);
-        if(md==="n" && nEv.on)playNormalEvent(res);
-        if(md==="q" && qCfg.on)playMultiEvent(res);
-      }
-    }catch(err){
-      clearInterval
+        if(md==="n" && n
