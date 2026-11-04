@@ -469,42 +469,26 @@ function roll(){
       } else {
         clearInterval(h);
         var res=[];
+        
+        // 100% quay xúc xắc ngẫu nhiên tự nhiên cho tất cả các viên
+        for(var j=0;j<n;j++) res.push(rndInt(6));
+
+        // Nếu bật chế độ ép thắng: tinh chỉnh ngầm ẩn sao cho người được ép có xác suất thắng ván đó cao hơn một cách mượt mà, hoàn toàn không lộ số viên cố định
         if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          // Logic ngẫu nhiên ẩn (weighted random tinh tế): Không bao giờ lộ, số lượng viên ra biến đổi linh hoạt
-          var numTarget, numOpp;
+          var a = res.filter(function(c){ return c === targetColor; }).length;
+          var b = res.filter(function(c){ return c === oppColor; }).length;
+          
           var luck = rndInt(100);
-          
-          if (luck < 45) {
-            // 45% ván: Người được ép nhỉnh hơn 1 viên (thắng nhẹ)
-            numTarget = 2; numOpp = 1;
-          } else if (luck < 70) {
-            // 25% ván: Người được ép ra 1 viên, đối thủ 0 viên (tích lũy từ từ)
-            numTarget = 1; numOpp = 0;
-          } else if (luck < 85) {
-            // 15% ván: Hòa (để lịch sử xúc xắc nhìn chân thực, không bị nghi ngờ)
-            numTarget = 1; numOpp = 1;
-          } else {
-            // 15% ván: Nhường điểm cho đối thủ gỡ nhẹ để tạo cảm giác game công bằng, kịch tính
-            numTarget = 0; numOpp = 1;
+          // 65% xác suất nếu ván đó ngẫu nhiên không có lợi cho người được ép, hệ thống sẽ âm thầm đổi 1 viên bất kỳ thành màu của người được ép để đảm bảo tiến độ
+          if (luck < 65 && a <= b) {
+            var idx = rndInt(res.length);
+            res[idx] = targetColor;
           }
-          
-          for(var k=0; k<numTarget; k++) res.push(targetColor);
-          for(var k=0; k<numOpp; k++) res.push(oppColor);
-          
-          while(res.length < n){
-            var c = rndInt(6);
-            if(c !== targetColor && c !== oppColor) {
-              res.push(c);
-            }
-          }
-          res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
-          res.push(qCfg.nextColor);
-        } else {
-          for(var j=0;j<n;j++)res.push(rndInt(6));
+          res[0] = qCfg.nextColor;
         }
         
         show(res);
@@ -520,4 +504,13 @@ function roll(){
     }catch(err){
       clearInterval(h);
       busy=false;
- 
+    }
+  },100);
+}
+
+tap($("roll"), roll);
+tap($("tv"), function(){ say("Kiểm tra âm thanh thành công"); });
+tap($("rs"), function(){ cnt=[0,0,0,0,0,0];rolls=[];fc=0;stats(); });
+</script>
+</body>
+</html>
