@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Taki Dice Fix</title>
+<title>Zalo Cuto - Fix</title>
 <style>
   body {
     margin: 0;
@@ -43,6 +43,7 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   }
   .d i {
+    display: block;
     width: 16px;
     height: 16px;
     border-radius: 50%;
@@ -88,7 +89,8 @@ document.getElementById("roll").addEventListener("click", function() {
     var d = document.createElement("div");
     d.className = "d";
     d.style.background = C[rndInt(6)];
-    d.appendChild(document.createElement("i"));
+    var iEl = document.createElement("i");
+    d.appendChild(iEl);
     box.appendChild(d);
   }
 });
