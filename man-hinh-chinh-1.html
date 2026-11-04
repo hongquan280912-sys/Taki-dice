@@ -117,16 +117,14 @@ var mode="n",nd=4;
 var ev={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2",rig:0};
 var nEv={on:false,over:false,s1:0,s2:0,t:5,c1:4,c2:2,n1:"Người 1",n2:"Người 2"};
 var qCfg={on:false, nextColor:null, players:[]};
+var box=document.getElementById("dice"),ban=document.getElementById("ban");
 var $=function(i){return document.getElementById(i);};
 
 if ($("roomInput")) {
   $("roomInput").value = currentRoom;
 }
 
-// Hàm vẽ xúc xắc chống mất hiển thị
 function show(res){
-  var box = document.getElementById("dice");
-  if(!box) return;
   box.innerHTML="";
   if(!res || !res.length) res = [0,1,2,3];
   res.forEach(function(c){
@@ -134,15 +132,9 @@ function show(res){
     d.style.background=C[c];d.innerHTML="<i></i>";box.appendChild(d);
   });
 }
-
-// Vẽ sẵn xúc xắc ngay khi tải trang
-document.addEventListener("DOMContentLoaded", function(){
-  show([0,1,2,3]);
-});
 show([0,1,2,3]);
 
 function tap(el,fn){
-  if(!el)return;
   var last=0;
   function h(e){
     var now=Date.now();
@@ -164,7 +156,6 @@ try{
 }catch(e){}
 function applyView(){
   var b=document.querySelector(".box"),z=ZS[zi];
-  if(!b)return;
   b.style.zoom=z;
   b.style.width=(100/z)+"%";
   b.className=mini?"box mini":"box";
@@ -175,8 +166,8 @@ tap($("zm"),function(){if(zi>0){zi--;applyView();}});
 tap($("zp"),function(){if(zi<ZS.length-1){zi++;applyView();}});
 tap($("mn"),function(){mini=!mini;applyView();});
 
-function vstat(t){if($("vs"))$("vs").textContent=t;}
-function banner(t){if(!$("ban"))return;$("ban").textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){$("ban").textContent="";},3500);}
+function vstat(t){$("vs").textContent=t;}
+function banner(t){ban.textContent=t;clearTimeout(banner.t);banner.t=setTimeout(function(){ban.textContent="";},3500);}
 
 var voices=[];
 var ae=new Audio();ae.preload="auto";
@@ -245,43 +236,40 @@ function sProcess(){
 function mini_(c){return '<div class="m" style="background:'+C[c]+'"><i></i></div>';}
 function row(a){var h="";for(var i=0;i<6;i++)h+='<div style="background:'+C[i]+'">'+a[i]+'</div>';return h;}
 function stats(){
-  if($("st")) $("st").innerHTML=row(cnt);
+  $("st").innerHTML=row(cnt);
   var c20=[0,0,0,0,0,0];
   rolls.forEach(function(r){r.forEach(function(c){c20[c]++;});});
-  if($("st20")) $("st20").innerHTML=row(c20);
-  if($("fc")) $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
+  $("st20").innerHTML=row(c20);
+  $("fc").innerHTML="Four-Colors: <b>"+fc+"</b> 🌈";
   var h="";
   rolls.forEach(function(r,i){h+='<div class="h"><span>'+(i+1)+'.</span>'+r.map(mini_).join("")+'</div>';});
-  if($("hist")) $("hist").innerHTML=h;
+  $("hist").innerHTML=h;
 }
 function esc(s){return (s||"").replace(/[&<>]/g,"");}
 
-if($("rng")) $("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
+$("rng").innerHTML="🔒 Random chuẩn bảo mật ✓";
 tap($("t1k"),function(){
   var c=[0,0,0,0,0,0],i;
   for(i=0;i<4000;i++)c[rndInt(6)]++;
-  if($("t1r")){
-    $("t1r").style.display="block";
-    $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
-  }
+  $("t1r").style.display="block";
+  $("t1r").innerHTML="<b>Test 1000 lượt</b><div class=\"row\">"+row(c)+"</div>";
 });
 
 function scoreboard(msg, isNormal){
-  if(!$("score"))return;
   $("score").style.display="block";
   var activeEv = isNormal ? nEv : ev;
-  var name1 = ($("n1") && $("n1").value.trim()) || activeEv.n1 || "Người 1";
-  var name2 = ($("n2") && $("n2").value.trim()) || activeEv.n2 || "Người 2";
-  if($("sc")) $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
+  var name1 = $("n1").value.trim() || activeEv.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || activeEv.n2 || "Người 2";
+  $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
     ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
-  if($("msg")) $("msg").textContent=msg||"";
-  
+  $("msg").textContent=msg||"";
+
   if(activeEv.over){
-    if($("roll")) $("roll").style.display = "none";
-    if($("resetBtn")) $("resetBtn").style.display = "block";
+    $("roll").style.display = "none";
+    $("resetBtn").style.display = "block";
   } else {
-    if($("roll")) $("roll").style.display = "block";
-    if($("resetBtn")) $("resetBtn").style.display = "none";
+    $("roll").style.display = "block";
+    $("resetBtn").style.display = "none";
   }
 }
 
@@ -293,16 +281,16 @@ function resetGame(){
     nEv.s1 = 0; nEv.s2 = 0; nEv.over = false;
     scoreboard("Đã reset ván mới! Bắt đầu Roll", true);
   }
-  if($("roll")) $("roll").style.display = "block";
-  if($("resetBtn")) $("resetBtn").style.display = "none";
+  $("roll").style.display = "block";
+  $("resetBtn").style.display = "none";
 }
 tap($("resetBtn"), resetGame);
 
 function playEvent(res){
   var a = res.filter(function(c){ return c === ev.c1; }).length; 
   var b = res.filter(function(c){ return c === ev.c2; }).length; 
-  var name1 = ($("n1") && $("n1").value.trim()) || ev.n1 || "Người 1";
-  var name2 = ($("n2") && $("n2").value.trim()) || ev.n2 || "Người 2";
+  var name1 = $("n1").value.trim() || ev.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || ev.n2 || "Người 2";
   var m = "";
   
   if(a > b){
@@ -328,8 +316,8 @@ function playEvent(res){
 function playNormalEvent(res){
   var a = res.filter(function(c){ return c === nEv.c1; }).length;
   var b = res.filter(function(c){ return c === nEv.c2; }).length;
-  var name1 = ($("n1") && $("n1").value.trim()) || nEv.n1 || "Người 1";
-  var name2 = ($("n2") && $("n2").value.trim()) || nEv.n2 || "Người 2";
+  var name1 = $("n1").value.trim() || nEv.n1 || "Người 1";
+  var name2 = $("n2").value.trim() || nEv.n2 || "Người 2";
   var m = "";
   
   if(a > b){
@@ -362,23 +350,27 @@ function playMultiEvent(res){
   } else {
     m += " — Không ai trúng màu này";
   }
-  if($("score")) $("score").style.display = "block";
-  if($("sc")) $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
-  if($("msg")) $("msg").textContent = m;
+  $("score").style.display = "block";
+  $("sc").innerHTML = '<span style="color:'+C[rolledColor]+'">Kết quả: ' + CS[rolledColor].toUpperCase() + '</span>';
+  $("msg").textContent = m;
 }
 
 var lastConfigId = 0;
 function handleConfig(cfg){
-  if(!cfg) return;
+  if(!cfg) {
+    show([0,1,2,3]);
+    stats();
+    return;
+  }
   if(cfg.configId && cfg.configId === lastConfigId) return;
   lastConfigId = cfg.configId || 0;
 
   mode = cfg.mode || "n";
   nd = cfg.nd || 4;
-  if($("score")) $("score").style.display = "none";
+  $("score").style.display = "none";
   ev.on = false; nEv.on = false; qCfg.on = false;
-  if($("roll")) $("roll").style.display = "block";
-  if($("resetBtn")) $("resetBtn").style.display = "none";
+  $("roll").style.display = "block";
+  $("resetBtn").style.display = "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -405,9 +397,9 @@ function handleConfig(cfg){
       nextColor: (cfg.q.nextColor !== undefined ? cfg.q.nextColor : null),
       players: cfg.q.players || []
     };
-    if($("score")) $("score").style.display = "block";
-    if($("sc")) $("sc").textContent = "Chế độ Event nhiều người";
-    if($("msg")) $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
+    $("score").style.display = "block";
+    $("sc").textContent = "Chế độ Event nhiều người";
+    $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
   }
   show([0,1,2,3,4,5].slice(0, nd));
 }
@@ -423,9 +415,7 @@ pollConfig();
 
 var localSel1=4, localSel2=2;
 function swatches(id,start,cb){
-  var el=$(id);
-  if(!el)return;
-  var bs=[];el.innerHTML="";
+  var el=$(id),bs=[];el.innerHTML="";
   C.forEach(function(c,i){
     var b=document.createElement("button");
     b.style.background=c;b.setAttribute("aria-label",CS[i]);
@@ -446,8 +436,8 @@ function syncLocalConfig(){
       t:5,
       c1:localSel1,
       c2:localSel2,
-      n1:($("n1") && $("n1").value.trim())||"Người 1",
-      n2:($("n2") && $("n2").value.trim())||"Người 2",
+      n1:$("n1").value.trim()||"Người 1",
+      n2:$("n2").value.trim()||"Người 2",
       rig:0
     }
   };
@@ -459,8 +449,8 @@ function syncLocalConfig(){
   }).catch(function(e){});
 }
 
-if($("n1")) $("n1").addEventListener("input",syncLocalConfig);
-if($("n2")) $("n2").addEventListener("input",syncLocalConfig);
+$("n1").addEventListener("input",syncLocalConfig);
+$("n2").addEventListener("input",syncLocalConfig);
 
 if ($("roomInput")) {
   $("roomInput").addEventListener("change", function(){
@@ -501,19 +491,39 @@ function roll(){
       } else {
         clearInterval(h);
         var res=[];
-        
-        for(var j=0;j<n;j++) res.push(rndInt(6));
-
         if(md==="e" && ev.rig && ev.rig > 0){
           var targetColor = (ev.rig === 1) ? ev.c1 : ev.c2;
           var oppColor = (ev.rig === 1) ? ev.c2 : ev.c1;
           
-          var a = res.filter(function(c){ return c === targetColor; }).length;
-          var b = res.filter(function(c){ return c === oppColor; }).length;
+          var myScore = (ev.rig === 1) ? ev.s1 : ev.s2;
+          var oppScore = (ev.rig === 1) ? ev.s2 : ev.s1;
           
-          var luck = rndInt(100);
-          if (luck < 65 && a <= b) {
-            var idx = rndInt(res.length);
-            res[idx] = targetColor;
+          var numTarget, numOpp;
+          if (oppScore < myScore - 1) {
+            numTarget = rndInt(2);
+            numOpp = 1 + rndInt(2);
+          } else {
+            numTarget = 2;
+            numOpp = 1;
           }
-        } else if(md==="q" && qCfg.on && qCfg.nextColor !== n
+          
+          for(var k=0; k<numTarget; k++) res.push(targetColor);
+          for(var k=0; k<numOpp; k++) res.push(oppColor);
+          
+          while(res.length < n){
+            var c = rndInt(6);
+            if(c !== targetColor && c !== oppColor) {
+              res.push(c);
+            }
+          }
+          res.sort(function(){ return Math.random() - 0.5; });
+        } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
+          res.push(qCfg.nextColor);
+        } else {
+          for(var j=0;j<n;j++)res.push(rndInt(6));
+        }
+        
+        show(res);
+        res.forEach(function(c){cnt[c]++;});
+        if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
+        rolls.unshift(res);if(rolls
