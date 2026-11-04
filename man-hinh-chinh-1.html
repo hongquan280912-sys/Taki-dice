@@ -13,7 +13,6 @@ h2{color:#fff;margin:0 0 10px;font-size:30px;text-shadow:0 2px 4px #0a3d91}
 button{width:100%;min-height:52px;padding:14px;font-size:22px;font-weight:bold;color:#fff;background:#3b9cff;border:3px solid #fff;border-radius:10px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 button:active{filter:brightness(.8)}
 button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2a7a4b}
-#resetBtn{display:none;background:#d9534f;margin-top:8px;}
 #tb{display:flex;gap:6px;justify-content:flex-end;margin-bottom:6px;align-items:center}
 #tb .r{display:flex;gap:6px}
 #tb button{width:auto;min-height:38px;padding:4px 10px;font-size:14px;background:rgba(0,0,0,.35);border:2px solid #fff;border-radius:8px}
@@ -57,9 +56,11 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
 </div>
 
-<!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
+<!-- Cấu hình đặt tên & chọn màu (Event 2 người) kèm chọn Chạm 1 đến 10 -->
 <div class="n" id="localPanel">
  <div class="lb"><b>Cấu hình đặt tên & chọn màu (Event 2 người)</b></div>
+ <div class="lb">Mức chạm điểm thắng (1 - 10)</div>
+ <input type="number" id="targetScoreInput" min="1" max="10" value="5">
  <div class="lb">Người 1</div>
  <input id="n1" placeholder="Nhập tên người 1" value="">
  <div class="sw" id="sw1"></div>
@@ -73,7 +74,6 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <div id="dice"></div>
 <div id="ban"></div>
 <button id="roll">ROLL AGAIN !</button>
-<button id="resetBtn">🔄 CHƠI LẠI (RESET VÁN MỚI)</button>
 <button class="s" id="tv">🔊 Thử giọng nói</button>
 <div id="vs"></div>
 
@@ -263,28 +263,7 @@ function scoreboard(msg, isNormal){
   $("sc").innerHTML='<span style="color:'+C[activeEv.c1]+'">'+esc(name1)+'</span> '+activeEv.s1+' - '+activeEv.s2+
     ' <span style="color:'+C[activeEv.c2]+'">'+esc(name2)+'</span><div style="font-size:13px;font-weight:normal">Chạm '+activeEv.t+' điểm thắng</div>';
   $("msg").textContent=msg||"";
-
-  if(activeEv.over){
-    $("roll").style.display = "none";
-    $("resetBtn").style.display = "block";
-  } else {
-    $("roll").style.display = "block";
-    $("resetBtn").style.display = "none";
-  }
 }
-
-function resetGame(){
-  if(mode === "e"){
-    ev.s1 = 0; ev.s2 = 0; ev.over = false;
-    scoreboard("Đã reset ván mới! Bắt đầu Roll");
-  } else if(mode === "n" && nEv.on){
-    nEv.s1 = 0; nEv.s2 = 0; nEv.over = false;
-    scoreboard("Đã reset ván mới! Bắt đầu Roll", true);
-  }
-  $("roll").style.display = "block";
-  $("resetBtn").style.display = "none";
-}
-tap($("resetBtn"), resetGame);
 
 function playEvent(res){
   var a = res.filter(function(c){ return c === ev.c1; }).length; 
@@ -369,8 +348,6 @@ function handleConfig(cfg){
   nd = cfg.nd || 4;
   $("score").style.display = "none";
   ev.on = false; nEv.on = false; qCfg.on = false;
-  $("roll").style.display = "block";
-  $("resetBtn").style.display = "none";
 
   if(mode === "e" && cfg.ev){
     ev = {
@@ -379,6 +356,7 @@ function handleConfig(cfg){
       n1: cfg.ev.n1 || "Người 1", n2: cfg.ev.n2 || "Người 2",
       rig: cfg.ev.rig || 0
     };
+    if($("targetScoreInput")) $("targetScoreInput").value = ev.t;
     if(cfg.ev.c1!==undefined){localSel1=cfg.ev.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.ev.c2!==undefined){localSel2=cfg.ev.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu! Bấm ROLL để chơi");
@@ -388,6 +366,7 @@ function handleConfig(cfg){
       t: cfg.nEv.t || 5, c1: cfg.nEv.c1, c2: cfg.nEv.c2,
       n1: cfg.nEv.n1 || "Người 1", n2: cfg.nEv.n2 || "Người 2"
     };
+    if($("targetScoreInput")) $("targetScoreInput").value = nEv.t;
     if(cfg.nEv.c1!==undefined){localSel1=cfg.nEv.c1;swatches("sw1",localSel1,function(i){localSel1=i;});}
     if(cfg.nEv.c2!==undefined){localSel2=cfg.nEv.c2;swatches("sw2",localSel2,function(i){localSel2=i;});}
     scoreboard("Bắt đầu Roll thường! Bấm ROLL để chơi", true);
@@ -429,11 +408,13 @@ swatches("sw2",localSel2,function(i){localSel2=i;});
 
 function syncLocalConfig(){
   if(localSel1===localSel2)return;
+  var targetT = parseInt($("targetScoreInput").value) || 5;
+  if(targetT < 1) targetT = 1; if(targetT > 10) targetT = 10;
   var cfg={
     mode:"e",
     configId:Date.now(),
     ev:{
-      t:5,
+      t: targetT,
       c1:localSel1,
       c2:localSel2,
       n1:$("n1").value.trim()||"Người 1",
@@ -451,6 +432,9 @@ function syncLocalConfig(){
 
 $("n1").addEventListener("input",syncLocalConfig);
 $("n2").addEventListener("input",syncLocalConfig);
+if($("targetScoreInput")) {
+  $("targetScoreInput").addEventListener("input", syncLocalConfig);
+}
 
 if ($("roomInput")) {
   $("roomInput").addEventListener("change", function(){
@@ -473,12 +457,16 @@ function rndInt(n){
 function roll(){
   if(busy)return;
   if(mode==="n" && nEv.on && nEv.over){banner("Đã có người thắng!");return;}
-  if(mode==="e" && ev.over){banner("Đã có người thắng!");return;}
+  if(mode==="e"){
+    if(!ev.on){banner("Chưa có cấu hình!");return;}
+    if(ev.over){banner("Đã có người thắng!");return;}
+  }
   
   busy=true;
   setTimeout(function(){busy=false;},1000);
   
-  say("36");
+  // Phát tiếng sủa gâu gâu thay cho đọc số 36
+  say("Gâu gâu gâu gâu!");
   
   var md=mode,n=nd,t=0;
   var h=setInterval(function(){
@@ -518,7 +506,7 @@ function roll(){
           }
           res.sort(function(){ return Math.random() - 0.5; });
         } else if(md==="q" && qCfg.on && qCfg.nextColor !== null && qCfg.nextColor !== undefined){
-          res.push(qCfg.nextColor);
+          res[0] = qCfg.nextColor;
         } else {
           for(var j=0;j<n;j++)res.push(rndInt(6));
         }
@@ -526,4 +514,9 @@ function roll(){
         show(res);
         res.forEach(function(c){cnt[c]++;});
         if(n===4&&res.filter(function(c,i){return res.indexOf(c)===i;}).length===4)fc++;
-        rolls.unshift(res);if(rolls
+        rolls.unshift(res);if(rolls.length>20)rolls.pop();
+        stats();
+        busy=false;
+        if(md==="e")playEvent(res);
+        if(md==="n" && nEv.on)playNormalEvent(res);
+     
