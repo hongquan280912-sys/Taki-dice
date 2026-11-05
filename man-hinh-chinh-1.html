@@ -452,46 +452,33 @@ var NUMW={"một":1,"hai":2,"ba":3,"bốn":4,"năm":5,"sáu":6,"bảy":7,"tám":
 function toNum(x){x=x.toLowerCase();return NUMW[x]||parseInt(x,10)||0;}
 function applyVoice(t){
   t=t.replace(/[,.]/g," ").replace(/\s+/g," ").trim();
+  var CH="(?:chạm|trạm|tạm|chàm|chậm|chạp|trâm|cham|tram)";
+  var NG="(?:ngư[ờơ]i|ngừ[ơờ]i|nguời)";
   var ok=false,m;
-  var re=/ngư[ờơ]i\s*(1|2|một|hai)\s+(.+?)(?=\s+ngư[ờơ]i\s*(?:1|2|một|hai)(?:\s|$)|\s+chạm|$)/gi;
+  var re=new RegExp(NG+"\\s*(1|2|một|hai|mốt)\\s+(.+?)(?=\\s+"+NG+"\\s*(?:1|2|một|hai|mốt)(?:\\s|$)|\\s+"+CH+"|$)","gi");
   while((m=re.exec(t))){
     var nm=m[2].trim();
-    if(nm){$(toNum(m[1])===1?"n1":"n2").value=nm;ok=true;}
+    if(nm){$(toNum(m[1])===2||m[1].toLowerCase()==="hai"?"n2":"n1").value=nm;ok=true;}
   }
-  var c=/chạm\s*(\d+|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)/i.exec(t);
+  var c=new RegExp(CH+"\\s*(\\d+|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)","i").exec(t);
   if(c){var k=toNum(c[1]);if(k>=1&&k<=10){localT=k;targets();ok=true;}}
   if(ok){syncLocalConfig();$("micst").textContent="Đã nhận: "+t;}
-  else $("micst").textContent="Không hiểu: \""+t+"\". Thử nói: Người 1 Nam, người 2 Linh, chạm 5";
+  else $("micst").textContent="Máy nghe thành: \""+t+"\" (chưa hiểu). Thử nói: Người 1 Nam, người 2 Linh, chạm 5";
 }
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null;
 tap($("mic"),function(){
   if(!SR){$("micst").textContent="Trình duyệt này không hỗ trợ nhận giọng nói. Dùng mic trên bàn phím: bấm ô tên rồi bấm biểu tượng mic.";try{$("n1").focus();}catch(x){}return;}
   try{if(rec)rec.abort();}catch(e){}
-  rec=new SR();rec.lang="vi-VN";rec.interimResults=false;rec.maxAlternatives=1;
+  rec=new SR();rec.lang="vi-VN";rec.interimResults=true;rec.maxAlternatives=1;var got=false;
   rec.onstart=function(){$("micst").textContent="🎤 Đang nghe...";};
-  rec.onresult=function(e){applyVoice(e.results[0][0].transcript);};
+  rec.onresult=function(e){
+    var r=e.results[e.results.length-1],tx=r[0].transcript;
+    if(r.isFinal){got=true;applyVoice(tx);}
+    else $("micst").textContent="🎤 Đang nghe: "+tx;
+  };
+  rec.onend=function(){if(!got&&$("micst").textContent.indexOf("Lỗi")<0&&$("micst").textContent.indexOf("chưa được phép")<0)$("micst").textContent="Không nghe được gì. Bấm 🎤 rồi nói ngay, nói to và gần mic.";};
   rec.onerror=function(e){
     if(e.error==="not-allowed"||e.error==="service-not-allowed"){
       $("micst").textContent="Trang này chưa được phép dùng mic. Dùng mic trên bàn phím: bấm ô tên rồi bấm biểu tượng mic.";
       try{$("n1").focus();}catch(x){}
-    } else $("micst").textContent="Lỗi mic: "+(e.error||"");
-  };
-  rec.start();
-});
-
-$("n1").addEventListener("input",syncLocalConfig);
-$("n2").addEventListener("input",syncLocalConfig);
-
-if ($("roomInput")) {
-  $("roomInput").addEventListener("change", function(){
-    currentRoom = this.value.trim() || "taki_room6";
-    lastConfigId = 0;
-    pollConfig();
-  });
-}
-
-var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
-function rndInt(n){
-  var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
-  do{
-    if(SECURE)window.crypto.getRandom
+    } else $("micst").
