@@ -26,6 +26,10 @@ button.s{font-size:16px;min-height:46px;padding:9px;margin-top:8px;background:#2
 .m{width:22px;height:22px;border:2px solid #fff;border-radius:6px;display:flex;align-items:center;justify-content:center}
 .m i{width:5px;height:5px}
 #rs{margin-top:8px;background:none;border:none;color:#fff;font-size:14px;text-decoration:underline;padding:8px;width:auto;min-height:40px}
+.wl{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;text-align:left}
+.wl b{color:#fff;font-size:13px;width:100%}
+.wl span{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 9px;background:rgba(255,255,255,.18);border:1px solid #fff;border-radius:14px;color:#fff;font-size:14px;word-break:break-word}
+.wl span i{width:11px;height:11px;border-radius:50%;border:1px solid #fff;flex:none}
 #ban{min-height:34px;margin-top:10px;font-size:22px;font-weight:bold;color:#fff;text-shadow:0 2px 4px #0a3d91}
 #vs{font-size:12px;color:#fff;margin-top:6px;min-height:16px}
 #score{display:none;margin-top:10px;padding:10px;background:#fff;border-radius:12px;font-size:20px;font-weight:bold;color:#222}
@@ -38,10 +42,39 @@ input{width:100%;box-sizing:border-box;padding:10px;font-size:16px;font-weight:b
 .sw button{width:38px;height:38px;min-height:38px;padding:0;margin:0;flex:none;border:3px solid #fff;border-radius:8px;font-size:18px;color:#fff;text-shadow:0 0 3px #000}
 details{margin-top:12px;color:#fff;text-align:left}
 summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);border-radius:8px;font-size:15px}
-.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel{display:none!important}
+.box.mini #pfBtn,.box.mini #tv,.box.mini #vs,.box.mini .pc,.box.mini details,.box.mini #localPanel,.box.mini #qPanel{display:none!important}
 .box.mini h2{font-size:20px;margin-bottom:4px}
 .box.mini #dice{margin:8px 0}
 .box.mini #score{font-size:16px;margin-top:6px}
+
+#ytBox{margin-top:12px;padding:8px;background:rgba(0,0,0,.45);border-radius:10px;text-align:left;color:#fff}
+#ytHead{font-size:14px;font-weight:bold}
+#ytSt{font-size:11px;font-weight:normal;opacity:.9}
+#ytRow{display:flex;gap:6px;margin-top:6px;align-items:flex-start}
+#ytRow input{flex:1;min-width:0;margin:0;font-size:15px;font-weight:normal;padding:8px}
+#ytRow button{width:auto;min-height:0;height:38px;padding:0 14px;font-size:15px;margin:0;background:#2a7a4b;flex:none}
+#ytWrap{position:relative;width:100%;padding-top:56.25%;margin-top:8px;background:#000;border-radius:8px;overflow:hidden;display:none}
+#ytWrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#ytRes{margin-top:8px;max-height:280px;overflow-y:auto}
+.yr{display:flex;gap:8px;padding:6px;border-radius:8px;background:rgba(255,255,255,.1);margin-bottom:6px;cursor:pointer}
+.yr img{width:120px;height:68px;object-fit:cover;border-radius:6px;flex:none;background:#000}
+.yr div{font-size:13px;line-height:1.3;min-width:0}
+.yr div b{display:block;font-size:14px;word-break:break-word}
+.yr div span{opacity:.8;font-size:12px}
+#ytKeyBox{margin-top:8px;font-size:12px}
+#ytKeyBox summary{padding:6px;font-size:12px;font-weight:normal;background:rgba(255,255,255,.12)}
+#ytKeyBox .kr{display:flex;gap:6px;margin-top:6px}
+#ytKeyBox input{flex:1;min-width:0;margin:0;font-size:13px;font-weight:normal;padding:6px}
+#ytKeyBox button{width:auto;min-height:0;height:34px;padding:0 12px;font-size:13px;margin:0;background:#2a7a4b;flex:none}
+.qr{display:flex;align-items:center;gap:8px;padding:4px 6px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:4px}
+.qd{width:16px;height:16px;border-radius:50%;border:2px solid #fff;flex:none}
+.qn{flex:1;font-size:14px;word-break:break-word}
+.qr button{width:auto;min-height:0;height:28px;padding:0 8px;font-size:13px;margin:0;background:rgba(0,0,0,.4)}
+#qList{max-height:130px;overflow-y:auto;margin-top:4px}
+.qb{display:flex;gap:6px;margin-top:6px;align-items:flex-start}
+.qb input{flex:1;min-width:0;margin:0;font-size:15px;padding:8px}
+.qb button{flex:1;width:auto;margin:0;min-height:38px;height:auto;padding:6px 4px;font-size:14px;background:#2a7a4b}
+.qb #qAdd{flex:none;width:56px;height:40px;font-size:18px;padding:0}
 </style></head><body>
 <div class="box">
 <div id="tb">
@@ -56,7 +89,10 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <!-- Chọn phòng riêng -->
 <div class="n" id="roomPanel">
  <div class="lb"><b>Tên phòng hiện tại:</b></div>
- <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: taki_room6, taki_room7...)" value="taki_room6">
+ <input id="roomInput" placeholder="Nhập tên phòng (ví dụ: Zalo)" value="Zalo">
+ <div class="lb" id="chatSt">⚪ Chat: đang kết nối…</div>
+ <div class="wl" id="waitSt"></div>
+ <button class="s" id="pfBtn" style="margin-top:6px"></button>
 </div>
 
 <!-- Cấu hình đặt tên & chọn màu (Event 2 người) -->
@@ -72,6 +108,20 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
  <div class="tp" id="tp"></div>
 </div>
 
+<div class="n" id="qPanel">
+ <button class="s" id="qToggle" style="margin-top:0">🎯 Event nhiều người ▼</button>
+ <div id="qBody" style="display:none">
+  <div class="lb">Event này chỉ dùng 1 viên xúc xắc. Gõ tên, chọn màu rồi bấm ➕</div>
+  <div class="qb"><input id="qName" placeholder="Tên người chơi"><button id="qAdd" aria-label="Thêm người">➕</button></div>
+  <div class="sw" id="qSw" style="margin-top:6px"></div>
+  <div class="lb" id="qCount">Chưa có người chơi</div>
+  <div id="qList"></div>
+  <div class="qb"><button id="qJoinBtn">📥 Chat: TẮT</button><button id="qStart">▶️ Bắt đầu</button></div>
+  <div class="qb"><button id="qEnd" style="background:#7a2a2a">⏹ Kết thúc</button><button id="qClear" style="background:#555">🗑 Xóa hết</button></div>
+  <div class="lb" id="qSt">Chat BẬT: ai nhắn "Nam đỏ" sẽ vào danh sách.</div>
+ </div>
+</div>
+
 <div id="score"><div id="sc"></div><div id="msg"></div></div>
 
 <div id="dice"></div>
@@ -80,6 +130,15 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 <button class="s" id="replay">🔄 Chơi lại</button>
 <button class="s" id="tv">🔊 Thử giọng nói</button>
 <div id="vs"></div>
+<div id="ytBox">
+ <div id="ytHead">▶️ YouTube <span id="ytSt">gõ tên phim / video rồi bấm Tìm</span></div>
+ <div id="ytRow"><input id="ytQ" placeholder="Tìm trên YouTube (hoặc dán link)"><button id="ytGo">Tìm</button></div>
+ <div id="ytWrap"></div>
+ <div id="ytRes"></div>
+ <details id="ytKeyBox"><summary>⚙️ Khóa YouTube (chỉ nhập 1 lần)</summary>
+  <div class="kr"><input id="ytKey" placeholder="Dán khóa API vào đây"><button id="ytKeySave">Lưu</button></div>
+ </details>
+</div>
 
 <div class="n pc">Possible colors are:
 <b style="color:#f00">Red</b>, <b style="color:#ffa500">Orange</b>,
@@ -101,7 +160,7 @@ summary{cursor:pointer;font-weight:bold;padding:10px;background:rgba(0,0,0,.35);
 </div>
 
 <script>
-var currentRoom = "taki_room6";
+var currentRoom = "Zalo";
 try {
   var urlParams = new URLSearchParams(window.location.search);
   var roomParam = urlParams.get('room');
@@ -329,7 +388,7 @@ function playMultiEvent(res){
   var m = "Ra màu " + CS[rolledColor];
   if(matched.length > 0){
     var names = matched.map(function(p){ return p.n || "Người chơi"; }).join(", ");
-    m += " — Trúng người: " + names;
+    m += " — Trúng " + matched.length + " người: " + names;
   } else {
     m += " — Không ai trúng màu này";
   }
@@ -377,118 +436,4 @@ function handleConfig(cfg){
     qCfg = {
       on: true,
       nextColor: (cfg.q.nextColor !== undefined ? cfg.q.nextColor : null),
-      players: cfg.q.players || []
-    };
-    $("score").style.display = "block";
-    $("sc").textContent = "Chế độ Event nhiều người";
-    $("msg").textContent = "Đã nhận cấu hình " + qCfg.players.length + " người chơi. Bấm ROLL!";
-  }
-  show([0,1,2,3,4,5].slice(0, nd));
-}
-
-function pollConfig(){
-  fetch(getDBUrl())
-    .then(function(res){ return res.json(); })
-    .then(function(cfg){ handleConfig(cfg); })
-    .catch(function(err){});
-}
-setInterval(pollConfig, 1000);
-pollConfig();
-
-var localSel1=4, localSel2=2, localT=5;
-function swatches(id,start,cb){
-  var el=$(id),bs=[];el.innerHTML="";
-  C.forEach(function(c,i){
-    var b=document.createElement("button");
-    b.style.background=c;b.setAttribute("aria-label",CS[i]);
-    b.textContent=(i===start)?"✓":"";
-    tap(b,function(){bs.forEach(function(x){x.textContent="";});b.textContent="✓";cb(i);syncLocalConfig();});
-    el.appendChild(b);bs.push(b);
-  });
-}
-swatches("sw1",localSel1,function(i){localSel1=i;});
-swatches("sw2",localSel2,function(i){localSel2=i;});
-
-function targets(){
-  var el=$("tp");el.innerHTML="";
-  for(var k=1;k<=10;k++)(function(k){
-    var b=document.createElement("button");
-    b.textContent=k;b.className=(k===localT)?"on":"";
-    tap(b,function(){
-      localT=k;
-      Array.prototype.forEach.call(el.children,function(x){x.className=(+x.textContent===k)?"on":"";});
-      syncLocalConfig();
-    });
-    el.appendChild(b);
-  })(k);
-}
-targets();
-
-function syncLocalConfig(){
-  if(localSel1===localSel2)return;
-  var cfg={
-    mode:"e",
-    configId:Date.now(),
-    ev:{
-      t:localT,
-      c1:localSel1,
-      c2:localSel2,
-      n1:$("n1").value.trim()||"Người 1",
-      n2:$("n2").value.trim()||"Người 2",
-      rig:0
-    }
-  };
-  lastConfigId = cfg.configId;
-  fetch(getDBUrl(), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cfg)
-  }).catch(function(e){});
-}
-
-var COLW={"đỏ":0,"do":0,"red":0,"cam":1,"orange":1,"vàng":2,"vang":2,"yellow":2,"xanh lá":3,"xanh la":3,"xanh lục":3,"xanh luc":3,"lục":3,"luc":3,"lá":3,"green":3,"xanh dương":4,"xanh duong":4,"xanh biển":4,"xanh bien":4,"dương":4,"duong":4,"blue":4,"tím":5,"tim":5,"purple":5};
-function colOf(k){return Object.prototype.hasOwnProperty.call(COLW,k)?COLW[k]:-1;}
-function parseChat(s){
-  var w=s.trim().split(/\s+/),col=-1,rest=w;
-  if(w.length>=2&&colOf(w.slice(-2).join(" ").toLowerCase())>=0){col=colOf(w.slice(-2).join(" ").toLowerCase());rest=w.slice(0,-2);}
-  else if(colOf(w[w.length-1].toLowerCase())>=0){col=colOf(w[w.length-1].toLowerCase());rest=w.slice(0,-1);}
-  if(!rest.length)return {name:s.trim(),color:-1};
-  return {name:rest.join(" "),color:col};
-}
-setInterval(function(){
-  var free=!$("n1").value.trim()?"n1":(!$("n2").value.trim()?"n2":null);
-  if(!free)return;
-  fetch("http://127.0.0.1:3000/next").then(function(r){return r.json();}).then(function(d){
-    if(!(d&&d.name))return;
-    var p=parseChat(d.name);
-    $(free).value=p.name;
-    if(p.color>=0){
-      if(free==="n1"&&p.color!==localSel2){localSel1=p.color;swatches("sw1",localSel1,function(i){localSel1=i;});}
-      if(free==="n2"&&p.color!==localSel1){localSel2=p.color;swatches("sw2",localSel2,function(i){localSel2=i;});}
-    }
-    syncLocalConfig();
-  }).catch(function(){});
-},2000);
-
-$("n1").addEventListener("input",syncLocalConfig);
-$("n2").addEventListener("input",syncLocalConfig);
-
-if ($("roomInput")) {
-  $("roomInput").addEventListener("change", function(){
-    currentRoom = this.value.trim() || "taki_room6";
-    lastConfigId = 0;
-    pollConfig();
-  });
-}
-
-var SECURE=!!(window.crypto&&window.crypto.getRandomValues);
-function rndInt(n){
-  var a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;
-  do{
-    if(SECURE)window.crypto.getRandomValues(a);
-    else a[0]=Math.floor(Math.random()*4294967296);
-  }while(a[0]>=lim);
-  return a[0]%n;
-}
-
-var BARK=new Audio("data:audio/mpeg;base64,SUQzBAAAAAABdlRYWFgAAAASAAADbWFqb3JfYnJhbmQAaXNvbQBUWFhYAAAAEwAAA21pbm9yX3ZlcnNpb24ANTEyAFRYWFgAAAAkAAADY29tcGF0aWJsZV9icmFuZHMAaXNvbWlzbzJhdmMxbXA0MQBUWFhYAAAALgAAA2NvbW1lbnQAdmlkOnYxMjA0NGdkMDAwMGNoN2s4MDNjNzd1YWs4OWk5dHYwAFRYWFgAAAAqAAADdmlkX21kNQA2MjNjNjhjOWIyMTAyZmYzMDQ1N2M0MjM0NDkwZTljYQBUU1NFAAAA
+      players: cfg.q.p
